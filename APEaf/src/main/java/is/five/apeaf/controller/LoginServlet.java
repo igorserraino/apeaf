@@ -93,7 +93,7 @@ public class LoginServlet extends HttpServlet {
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("Cookie", "JSESSIONID="+request.getParameter("id"));
 		conn.setRequestProperty("X-Internal-Token", temp_token);
-		conn.setRequestProperty("X-Caller-App", "APSNR201");
+		conn.setRequestProperty("X-Caller-App", "APEAF");
 		conn.setRequestProperty("X-Caller-URL",request.getRequestURL().toString());
 		conn.setRequestProperty("X-Caller-IP",ip);
 
@@ -126,13 +126,13 @@ public class LoginServlet extends HttpServlet {
         		request.getSession().setAttribute("ubAP", ubAP);
         		
         		update_apnetwork_advloggerDAO.insert(ubAP, ip, "OK");
-        		System.out.println("APSNR201 " + ubAP.getUsername() + " LOGGED ON " + Instant.now());
+        		System.out.println("APEAF " + ubAP.getUsername() + " LOGGED ON " + Instant.now());
 
         		request.getSession().setAttribute(SessionVariables.CALLER, request.getParameter("page"));
         		response.sendRedirect("home.jsp?"+request.getSession().getAttribute(SessionVariables.CALLER));
         		return;
 			} else {
-				update_apnetwork_advloggerDAO.insert(ubAP, ip, "KO APSNR201 username null");
+				update_apnetwork_advloggerDAO.insert(ubAP, ip, "KO APEAF username null");
 				
 
 				
@@ -143,9 +143,9 @@ public class LoginServlet extends HttpServlet {
 		} catch (Exception exc) {
 
 			if (ubAP==null) 
-					update_apnetwork_advloggerDAO.insert(new UserView(), ip, "KO APSNR201 " + exc.getMessage());
+					update_apnetwork_advloggerDAO.insert(new UserView(), ip, "KO APEAF " + exc.getMessage());
 				else
-					update_apnetwork_advloggerDAO.insert(ubAP, ip, "KO APSNR201 " + exc.getMessage());
+					update_apnetwork_advloggerDAO.insert(ubAP, ip, "KO APEAF " + exc.getMessage());
     		response.sendRedirect("/apnetwork");
 
 		}

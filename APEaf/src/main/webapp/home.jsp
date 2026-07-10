@@ -93,11 +93,6 @@
 
 	<%
 				AnnoFinanziarioDAO anniDAO = new AnnoFinanziarioDAO();
-
-				String id_servizio_selezionato = request.getSession()
-						.getAttribute(SessionVariables.SERVIZIO) != null
-								? (String) request.getSession().getAttribute(SessionVariables.SERVIZIO)
-								: "";
 				String id_anno_selezionato = request.getSession().getAttribute(SessionVariables.ANNO) != null
 						? (String) request.getSession().getAttribute(SessionVariables.ANNO)
 						: "";
@@ -207,23 +202,18 @@
         <a href="home.jsp?tab-parametri-riscossione" class="dropdown-item">
             <i class="bi bi-table"></i>
             <span>tabella param. riscossione</span>
-        </a>
-        <a href="home.jsp?tab-parametri-relazione" class="dropdown-item">
-            <i class="bi bi-table"></i>
-            <span>tabella param. relazione</span>
-        </a>
-        
+        </a> 
     <hr />
     
-    <a href="home.jsp?tab-parametri-relazione" class="dropdown-item">
+    <a href="home.jsp?ins-tab-ruoli.jsp" class="dropdown-item">
             <i class="bi bi-pencil-square"></i>
             <span>ins.tab.ruoli</span>
         </a>
-        <a href="home.jsp?tab-parametri-relazione" class="dropdown-item">
+        <a href="home.jsp?ins-residui-attivi" class="dropdown-item">
             <i class="bi bi-pencil-square"></i>
             <span>ins.residui.attivi</span>
         </a>
-        <a href="home.jsp?tab-parametri-relazione" class="dropdown-item">
+        <a href="home.jsp?ins-dati-fcde" class="dropdown-item">
            <i class="bi bi-pencil-square"></i>
             <span>ins.dati.FCDE</span>
         </a>
@@ -383,7 +373,6 @@
                   <!-- END ANNO SEL -->
                   
                   <form name="anno_servizio_form" id="anno_servizio_form" action="SELServiziAnniServlet" method="POST">
-					<input type="hidden" id="select_servizio" name="select_servizio" value="<%= id_servizio_selezionato %>" />
 					<input type="hidden" id="select_anno" name="select_anno" value="<%= id_anno_selezionato %>" />
 					</form>
 

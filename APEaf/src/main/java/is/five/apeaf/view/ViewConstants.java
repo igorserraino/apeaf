@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class ViewConstants {
 	
-	public final static String REV = "APDefinizione Rev. alpha";
+	public final static String REV = "APEAF Rev. alpha";
 
 	public final static String MAIN_UPDATES = "->> lot of stuff...";
 	

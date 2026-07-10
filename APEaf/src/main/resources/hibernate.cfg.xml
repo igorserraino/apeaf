@@ -30,6 +30,11 @@
         <mapping class="is.five.apeaf.dao.model.Anagrafiche"/> 
         <mapping class="is.five.apeaf.dao.model.SSOView"/> 
         <mapping class="is.five.apeaf.dao.model.UserView"/> 
+        <mapping class="is.five.apeaf.dao.model.TabPar"/> 
+        <mapping class="is.five.apeaf.dao.model.TabRisc"/> 
+        <mapping class="is.five.apeaf.dao.model.InsTabRuoli"/> 
+        <mapping class="is.five.apeaf.dao.model.InsResiduiAttivi"/> 
+        <mapping class="is.five.apeaf.dao.model.InsDatiFCDE"/> 
         
     </session-factory>
 </hibernate-configuration>

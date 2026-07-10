@@ -1,11 +1,15 @@
 package is.five.apeaf.utils;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class DateUtils {
@@ -52,4 +56,28 @@ public class DateUtils {
 
         return (maxFrequency > 1) ? mode : null; // match Excel behavior: #N/A if no value repeats
     }
+	
+	 private static final DateTimeFormatter TIMESTAMP_FORMAT =
+
+	            DateTimeFormatter.ofPattern(
+
+	                    "dd-MMM-yyyy HH:mm:ss",
+
+	                    Locale.ITALIAN);
+
+	    public static String formatTimestamp(Timestamp timestamp) {
+
+	        if (timestamp == null) {
+
+	            return "";
+
+	        }
+
+	        return timestamp.toInstant()
+
+	                .atZone(ZoneId.systemDefault())
+
+	                .format(TIMESTAMP_FORMAT);
+
+	    }
 }
