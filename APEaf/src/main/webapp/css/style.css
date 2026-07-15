@@ -1029,6 +1029,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background: rgba(255, 143, 0, 0.18);
 }
 
+.tab-ruoli-title-light {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 9px 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 6px;
+}
+
 .tab-ruoli {
     width: 100%;
     min-width: 1700px;

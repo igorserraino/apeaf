@@ -176,7 +176,7 @@ public class InsTabRuoliServlet extends HttpServlet {
             record.setValues(csvValues);
             record.setIdUser(user.getId());
 
-            InsTabRuoliDAO.saveOrUpdateByUserAndAnno(record);
+            InsTabRuoliDAO.saveOrUpdate(record);
 
             session.setAttribute(
                 InsTabRuoliServlet.class.getName(),

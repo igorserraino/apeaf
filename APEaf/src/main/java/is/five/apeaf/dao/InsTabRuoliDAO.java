@@ -13,41 +13,20 @@ public class InsTabRuoliDAO {
     private InsTabRuoliDAO() {
     }
 
-    public static void saveOrUpdateByUserAndAnno(
-            InsTabRuoli record) {
+    public static void saveOrUpdate(InsTabRuoli record) {
 
         Transaction transaction = null;
 
         try (Session session =
-                HibernateUtil.getSessionFactory().openSession()) {
+                 HibernateUtil.getSessionFactory().openSession()) {
 
             transaction = session.beginTransaction();
 
-            InsTabRuoli existing = session.createQuery(
-                """
-                FROM InsTabRuoli
-                WHERE idUser = :idUser
-                  AND anno = :anno
-                """,
-                InsTabRuoli.class
-            )
-            .setParameter("idUser", record.getIdUser())
-            .setParameter("anno", record.getAnno())
-            .uniqueResult();
-
-            if (existing == null) {
-
-                session.persist(record);
-
-            } else {
-
-                existing.setValues(record.getValues());
-
-                /*
-                 * Non serve chiamare merge/update:
-                 * existing è già gestito dalla sessione Hibernate.
-                 */
-            }
+            /*
+             * Hibernate inserts a new record or updates an existing one
+             * based only on the entity's primary key.
+             */
+            session.merge(record);
 
             transaction.commit();
 

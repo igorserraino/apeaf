@@ -219,8 +219,51 @@
         </a>
         
     
+<hr />
+    </div>
+    
+        <div class="nav-item dropdown show sidebar-group">
+        <a href="home.jsp?importi-definibili" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+			    <span>Importi definibili</span>
+			</a>
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>ipotesi tagli</span>           
+        </a> 
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>valutazione ruoli</span>           
+        </a> 
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>calcolo FCDE</span>           
+        </a> 
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>quota FCDE liberata</span>           
+        </a> 
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>riflessi sul bilancio</span>           
+        </a> 
+        <a href="home.jsp?bip" class="dropdown-item">
+			    <i class="bi bi-calculator"></i>
+            <span>valutazione generale</span>           
+        </a> 
+    <hr />
+    </div>
+    
+    
+        <div class="nav-item dropdown show sidebar-group">
+        <a href="home.jsp?bip" class="dropdown-item">
+  			  <i class="bi bi-file-earmark-text"></i>
+            <span>relazione</span>
+        </a>
 
     </div>
+    
+        </div>
 
     
 
@@ -235,9 +278,9 @@
         <img src="img/logos/gestore.test.five.2023.png"
              class="home-logo-userid" />
     </div>
+    </nav>
 
 </div>
-    </nav>
 </div>
 <!-- Sidebar End -->
 
