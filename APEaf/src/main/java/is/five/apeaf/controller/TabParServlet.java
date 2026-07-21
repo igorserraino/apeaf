@@ -39,6 +39,15 @@ public class TabParServlet extends HttpServlet {
                 return;
             }
 
+            
+            String operation = request.getParameter("operation");
+
+            if ("delete".equals(operation)) {
+                deleteParameter(request, response);
+        		response.sendRedirect("home.jsp?" + request.getSession().getAttribute(SessionVariables.CALLER));
+
+                return;
+            }
 
             BigDecimal sanzione = getDecimal(request.getParameter("abbattimento_sanzione"));
             BigDecimal interessi = getDecimal(request.getParameter("abbattimento_interessi"));
@@ -99,5 +108,41 @@ public class TabParServlet extends HttpServlet {
         }
 
         return new BigDecimal(value.trim().replace(",", "."));
+    }
+    
+    private void deleteParameter(
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+
+        HttpSession session = request.getSession(false);
+        UserView user = session == null
+                ? null
+                : (UserView) session.getAttribute("ubAP");
+
+        if (user == null || !user.getActive()) {
+            response.sendRedirect("index.jsp");
+            return;
+        }
+
+        try {
+            int parameterId = Integer.parseInt(request.getParameter("id"));
+
+            // IMPORTANT: deletion must filter by BOTH id and id_user.
+            boolean deleted = TabParDAO.deleteByIdAndUser(
+                    parameterId,
+                    user.getId());
+
+            session.setAttribute(
+                    TabParServlet.class.getName(),
+                    deleted
+                            ? "Parametro eliminato correttamente."
+                            : "Parametro non trovato o non eliminabile.");
+
+        } catch (NumberFormatException exception) {
+            session.setAttribute(
+                    TabParServlet.class.getName(),
+                    "Identificativo del parametro non valido.");
+        }
+
     }
 }

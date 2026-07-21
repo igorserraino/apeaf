@@ -227,11 +227,11 @@
 			    <i class="bi bi-calculator"></i>
 			    <span>Importi definibili</span>
 			</a>
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?ipotesi-tagli" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>ipotesi tagli</span>           
         </a> 
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?valutazione-ruoli" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>valutazione ruoli</span>           
         </a> 

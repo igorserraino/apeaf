@@ -134,7 +134,7 @@
 
     <i class="bi bi-sliders"></i>
 
-    RESIDUI ATTIVI
+    RESIDUI ATTIVI 
 
     <span class="badge bg-primary ms-2">
         <%= anno %>
@@ -194,7 +194,7 @@
                     </th>
 
                     <th style="width:180px;">
-                        VALORE
+                        al 31/12/<%= anno %>
                     </th>
 
                 </tr>
@@ -304,7 +304,20 @@
 
                 </tr>
                 
-                
+                <tr class="table-primary fw-bold">
+
+                    <td>
+                        TOTALE
+                    </td>
+
+                    <td class="text-end fs-6">
+                        <output id="totaleResiduiAttivi"
+                                aria-live="polite">
+                            0,00
+                        </output>
+                    </td>
+
+                </tr>
 
             </tbody>
 
@@ -325,3 +338,49 @@
 
     
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const valueInputs = document.querySelectorAll(
+        'input[name^="risc_"]'
+    );
+
+    const totalOutput = document.getElementById(
+        "totaleResiduiAttivi"
+    );
+
+    const italianNumberFormat = new Intl.NumberFormat(
+        "it-IT",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+
+    function updateTotal() {
+
+        let total = 0;
+
+        valueInputs.forEach(function (input) {
+
+            const value = Number(input.value);
+
+            if (Number.isFinite(value)) {
+                total += value;
+            }
+        });
+
+        totalOutput.textContent =
+            italianNumberFormat.format(total);
+    }
+
+
+    valueInputs.forEach(function (input) {
+        input.addEventListener("input", updateTotal);
+    });
+
+    updateTotal();
+});
+</script>

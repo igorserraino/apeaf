@@ -89,4 +89,35 @@ public class TabParDAO {
             return count != null && count > 0;
         }
     }
+    
+    public static boolean deleteByIdAndUser(int id, int userId) {
+
+        try (Session session =
+                HibernateUtil.getSessionFactory().openSession()) {
+
+            Transaction transaction = session.beginTransaction();
+
+            try {
+                int deletedRows = session.createNativeQuery(
+                        "DELETE FROM `tab-par` " +
+                        "WHERE `id` = :id " +
+                        "AND `id_user` = :userId"
+                    )
+                    .setParameter("id", id)
+                    .setParameter("userId", userId)
+                    .executeUpdate();
+
+                transaction.commit();
+
+                return deletedRows == 1;
+
+            } catch (RuntimeException exception) {
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+
+                throw exception;
+            }
+        }
+    }
 }

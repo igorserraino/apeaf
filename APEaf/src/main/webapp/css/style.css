@@ -1196,3 +1196,231 @@ input {
     white-space: nowrap;
 
 }
+
+ .ipotesi-tagli-card {
+        border: 1px solid #dee2e6;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+    }
+
+    .ipotesi-tagli-table {
+        width: 100%;
+        min-width: 1120px;
+        margin-bottom: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+        color: #092b62;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .ipotesi-tagli-table col.col-tipologia,
+    .ipotesi-tagli-table col.col-entrata {
+        width: 14.25%;
+    }
+
+    .ipotesi-tagli-table col.col-importo {
+        width: 11.65%;
+    }
+
+    .ipotesi-tagli-table col.col-spacer {
+        width: 1.5%;
+    }
+
+    .ipotesi-tagli-table th,
+    .ipotesi-tagli-table td {
+        padding: 0.55rem 0.7rem;
+        border: 1px solid #495057;
+        vertical-align: middle;
+    }
+
+    .ipotesi-tagli-table .empty-header {
+        border: 0;
+        background: #eae4f8;
+    }
+
+    .ipotesi-tagli-table .section-header {
+        background: #d9d9d9;
+        color: #111111;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .ipotesi-tagli-table .hypothesis-header {
+        background: #f1f1f1;
+        color: #111111;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .ipotesi-tagli-table .percentage-header {
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .ipotesi-tagli-table .description-cell {
+        background: #f2f2f2;
+        color: #092b62;
+    }
+
+    .ipotesi-tagli-table .amount-cell {
+        background: #dce9f7;
+        color: #3d477d;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .ipotesi-tagli-table .spacer-cell {
+        padding: 0;
+        border: 0;
+        background: #ffffff;
+    }
+
+    .ipotesi-tagli-table .separator-row td {
+        height: 1.4rem;
+        padding: 0;
+        border: 0;
+        background: #ffffff;
+    }
+
+    .ipotesi-tagli-table .total-label {
+        background: #d9d9d9;
+        color: #111111;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .ipotesi-tagli-table .total-value {
+        background: #f2f2f2;
+        color: #092b62;
+        text-align: right;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 767.98px) {
+        .ipotesi-tagli-card {
+            padding: 1rem !important;
+        }
+
+        .ipotesi-tagli-table {
+            font-size: 0.875rem;
+        }
+    }
+    
+        .valutazione-ruoli-card {
+        border: 1px solid #e1daf7;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+    }
+
+    .valutazione-ruoli-table {
+        width: 100%;
+        min-width: 1050px;
+        margin-bottom: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+        color: #111111;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .valutazione-ruoli-table col.col-tipologia {
+        width: 25%;
+    }
+
+    .valutazione-ruoli-table col.col-valore {
+        width: 18.75%;
+    }
+
+    .valutazione-ruoli-table th,
+    .valutazione-ruoli-table td {
+        padding: 0.65rem 0.8rem;
+        border: 1px solid #343a40;
+        vertical-align: middle;
+    }
+
+    .valutazione-ruoli-table thead th {
+        height: 5.4rem;
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: center;
+        font-size: 1.08rem;
+        font-weight: 800;
+        line-height: 1.45;
+    }
+
+    .valutazione-ruoli-table .description-cell {
+        background: #f3f3f3;
+        color: #092b62;
+        text-align: left;
+    }
+
+    .valutazione-ruoli-table .number-cell {
+        background: #dce9f7;
+        color: #3d477d;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .valutazione-ruoli-table .difference-cell {
+        background: #c9dcf0;
+        color: #092b62;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .valutazione-ruoli-table .difference-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .valutazione-ruoli-table .percentage-cell {
+        background: #dce9f7;
+        color: #3d477d;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .valutazione-ruoli-table .total-label,
+    .valutazione-ruoli-table .total-number {
+        background: #d9d9d9;
+        color: #092b62;
+        font-weight: 800;
+    }
+
+    .valutazione-ruoli-table .total-number {
+        background: #f2f2f2;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .valutazione-ruoli-table .total-difference {
+        background: #9dc3e6;
+        color: #092b62;
+        font-weight: 800;
+    }
+
+    .valutazione-ruoli-table .total-empty {
+        border: 0;
+        background: #f0ecff;
+    }
+
+    @media (max-width: 767.98px) {
+        .valutazione-ruoli-card {
+            padding: 1rem !important;
+        }
+
+        .valutazione-ruoli-table {
+            font-size: 0.9rem;
+        }
+    }

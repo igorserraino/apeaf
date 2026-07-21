@@ -3,7 +3,12 @@ package is.five.apeaf.utils;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.time.LocalDate;
+import java.util.Locale;
 
 
 public class Utils {
@@ -60,4 +65,53 @@ public class Utils {
 			}
 
 	}
+	
+	public static BigDecimal toBigDecimal(String value) {
+	    if (value == null || value.trim().isEmpty()) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    try {
+	        String normalized = value
+	            .trim()
+	            .replace("€", "")
+	            .replace(" ", "")
+	            .replace(".", "")
+	            .replace(",", ".");
+
+	        return new BigDecimal(normalized);
+
+	    } catch (NumberFormatException exception) {
+	        return BigDecimal.ZERO;
+	    }
+	}
+	public static BigDecimal parseItalianNumber(String value) {
+
+	    if (value == null || value.trim().isEmpty()) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    String cleaned = value
+	        .trim()
+	        .replace("€", "")
+	        .replace("\u00A0", "")
+	        .replace(" ", "");
+
+	    DecimalFormat format =
+	        (DecimalFormat) NumberFormat.getNumberInstance(Locale.ITALY);
+
+	    format.setParseBigDecimal(true);
+
+	    ParsePosition position = new ParsePosition(0);
+	    Number parsed = format.parse(cleaned, position);
+
+	    if (parsed == null || position.getIndex() != cleaned.length()) {
+	        throw new NumberFormatException(
+	            "Formato numerico italiano non valido: " + value
+	        );
+	    }
+
+	    return (BigDecimal) parsed;
+	}
+	
 }
