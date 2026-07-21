@@ -29,20 +29,20 @@
 
     AnnoFinanziarioDAO anniDAO = new AnnoFinanziarioDAO();
     String id_anno_selezionato = session.getAttribute(SessionVariables.ANNO) != null
-    		? (String) session.getAttribute(SessionVariables.ANNO)
-    		: "";
+			? (String) session.getAttribute(SessionVariables.ANNO)
+			: "";
     String anno_selezionato = "";
 
     try {
-    	if (id_anno_selezionato.length() > 0) {
-    		anno_selezionato = String
-    				.valueOf(anniDAO.findByID(Integer.parseInt(id_anno_selezionato)).getAnno());
-    	}
+		if (id_anno_selezionato.length() > 0) {
+			anno_selezionato = String
+					.valueOf(anniDAO.findByID(Integer.parseInt(id_anno_selezionato)).getAnno());
+		}
     } catch (Exception exc) {
     }
 
     if (anno_selezionato == null ||
-    		anno_selezionato.trim().isEmpty()) {
+			anno_selezionato.trim().isEmpty()) {
 %>
 
     <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4"
@@ -66,7 +66,7 @@
 
     try {
         anno = Integer.parseInt(
-        		anno_selezionato.trim()
+			anno_selezionato.trim()
         );
 
     } catch (NumberFormatException e) {
@@ -99,18 +99,18 @@
      * id_user + anno.
      */
      InsDatiFCDE datiFCDE =
-    		 InsDatiFCDEDAO.findByUserAndAnno(
+			 InsDatiFCDEDAO.findByUserAndAnno(
                     user.getId(),
                     anno
             );
 
 
     if (datiFCDE != null &&
-    		datiFCDE.getValue() != null &&
+			datiFCDE.getValue() != null &&
         !datiFCDE.getValue().trim().isEmpty()) {
 
         String[] saved =
-        		datiFCDE
+			datiFCDE
                         .getValue()
                         .split(";", -1);
 
@@ -146,7 +146,7 @@
 <%
     String message =
             (String) session.getAttribute(
-            		InsDatiFCDEServlet.class.getName()
+			InsDatiFCDEServlet.class.getName()
             );
 
     if (message != null) {
@@ -167,7 +167,7 @@
 
 <%
         session.removeAttribute(
-        		InsDatiFCDEServlet.class.getName()
+			InsDatiFCDEServlet.class.getName()
         );
     }
 %>
@@ -175,7 +175,7 @@
 
 <form action="ins-dati-fcde"
       method="post">
- 
+
     <input type="hidden"
            name="anno"
            value="<%= anno %>" />
@@ -189,12 +189,8 @@
 
                 <tr>
 
-                    <th style="width:300px;">
-                        TIPOLOGIA ENTRATA
-                    </th>
-
-                    <th style="width:180px;">
-                        VALORE
+                    <th colspan=2 style="width:480px">
+                        QUOTA FCDE ACCANTONATA A CONSUNTIVO
                     </th>
 
                 </tr>
@@ -206,7 +202,7 @@
 
                 <tr>
 
-                    <td class="fw-bold">
+                    <td class="fw-bold" style="width:300px">
                          ICI
                     </td>
 
@@ -303,8 +299,21 @@
                     </td>
 
                 </tr>
-                
-                
+
+                <tr class="table-primary fw-bold">
+
+                    <td>
+                        TOTALE FCDE
+                    </td>
+
+                    <td class="text-end fs-6">
+                        <output id="totaleFCDE"
+                                aria-live="polite">
+                            0,000
+                        </output>
+                    </td>
+
+                </tr>
 
             </tbody>
 
@@ -323,5 +332,54 @@
 
     </button>
 
-    
+
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const valueInputs = document.querySelectorAll(
+        'input[name^="risc_"]'
+    );
+
+    const totalOutput = document.getElementById(
+        "totaleFCDE"
+    );
+
+    const italianNumberFormat = new Intl.NumberFormat(
+        "it-IT",
+        {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }
+    );
+
+
+    function updateTotalFCDE() {
+
+        let total = 0;
+
+        valueInputs.forEach(function (input) {
+
+            const value = Number(input.value);
+
+            if (Number.isFinite(value)) {
+                total += value;
+            }
+        });
+
+        totalOutput.textContent =
+            italianNumberFormat.format(total);
+    }
+
+
+    valueInputs.forEach(function (input) {
+        input.addEventListener(
+            "input",
+            updateTotalFCDE
+        );
+    });
+
+    updateTotalFCDE();
+});
+</script>
