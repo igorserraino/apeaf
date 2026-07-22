@@ -93,11 +93,7 @@
         "0"
     };
 
-
-    /*
-     * La ricerca ora usa la chiave logica:
-     * id_user + anno.
-     */
+ 
      InsDatiFCDE datiFCDE =
 			 InsDatiFCDEDAO.findByUserAndAnno(
                     user.getId(),

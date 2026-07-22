@@ -233,6 +233,8 @@ String[] values = { "0", "0", "0", "0", "0" };
                                 : BigDecimal.ZERO;
                 %>
 
+				<tr><td></td></tr>
+
                 <tr>
                     <th class="total-label" scope="row">
                         TOTALE
@@ -267,11 +269,7 @@ String[] values = { "0", "0", "0", "0", "0" };
                         </span>
                     </td>
 
-                    <td class="total-number">
-                        <%= formatoItaliano3Decimali.format(
-                                percentualeTotale
-                        ) %>
-                    </td>
+                   
                 </tr>
             </tbody>
         </table>

@@ -1424,3 +1424,104 @@ input {
             font-size: 0.9rem;
         }
     }
+    
+        .quota-fcde-card {
+        overflow: hidden;
+    }
+
+    .quota-fcde-table {
+        width: 100%;
+        min-width: 1220px;
+        margin-bottom: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+        color: #092b62;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .quota-fcde-table col.col-tipologia {
+        width: 15%;
+    }
+
+    .quota-fcde-table col.col-quota-fcde {
+        width: 15%;
+    }
+
+    .quota-fcde-table col.col-percentuale-fcde {
+        width: 9%;
+    }
+
+    .quota-fcde-table col.col-importo {
+        width: 9.7%;
+    }
+
+    .quota-fcde-table col.col-spacer {
+        width: 2.8%;
+    }
+
+    .quota-fcde-table th,
+    .quota-fcde-table td {
+        padding: 0.7rem 0.75rem;
+        border: 1px solid #5f6368;
+        vertical-align: middle;
+    }
+
+    .quota-fcde-table .empty-header {
+        border: 0;
+        background: #eae4f8;
+    }
+
+    .quota-fcde-table .section-header {
+        background: #d9d9d9;
+        color: #111111;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        white-space: normal;
+    }
+
+    .quota-fcde-table .percentage-header {
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        white-space: normal;
+    }
+
+    .quota-fcde-table .description-cell {
+        background: #f2f2f2;
+        color: #092b62;
+    }
+
+    .quota-fcde-table .amount-cell {
+        background: #dce9f7;
+        color: #3d477d;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .quota-fcde-table .spacer-cell {
+        padding: 0;
+        border: 0;
+        background: #eae4f8;
+    }
+
+    .quota-fcde-table .separator-row td {
+        height: 1.4rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    @media (max-width: 767.98px) {
+        .quota-fcde-card {
+            padding: 1rem !important;
+        }
+
+        .quota-fcde-table {
+            font-size: 0.875rem;
+        }
+    }

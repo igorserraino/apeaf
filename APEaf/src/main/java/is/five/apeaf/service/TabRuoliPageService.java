@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -127,6 +128,28 @@ public class TabRuoliPageService {
                     entry.getKey(),
                     rows,
                     groupTotals.toData(moneyFormat, percentFormat)));
+            
+            Map<String, Integer> ordineEntrate = new HashMap<>();
+
+            ordineEntrate.put("ICI", 0);
+            ordineEntrate.put("TASI", 1);
+            ordineEntrate.put("IMU", 2);
+            ordineEntrate.put("TARI", 3);
+            ordineEntrate.put("SANZIONI CDS", 4);
+
+            groups.sort(
+                Comparator
+                    .comparingInt(
+                        (GroupData group) -> ordineEntrate.getOrDefault(
+                            group.getEntry().trim().toUpperCase(Locale.ROOT),
+                            Integer.MAX_VALUE
+                        )
+                    )
+                    .thenComparing(
+                        GroupData::getEntry,
+                        String.CASE_INSENSITIVE_ORDER
+                    )
+            );
         }
 
         List<String> entryOptions = new ArrayList<String>(

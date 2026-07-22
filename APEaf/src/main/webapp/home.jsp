@@ -225,7 +225,7 @@
         <div class="nav-item dropdown show sidebar-group">
         <a href="home.jsp?importi-definibili" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
-			    <span>Importi definibili</span>
+			    <span>importi definibili</span>
 			</a>
         <a href="home.jsp?ipotesi-tagli" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
@@ -235,11 +235,11 @@
 			    <i class="bi bi-calculator"></i>
             <span>valutazione ruoli</span>           
         </a> 
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?calcolo-fcde" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>calcolo FCDE</span>           
         </a> 
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?quota-fcde-liberata" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>quota FCDE liberata</span>           
         </a> 

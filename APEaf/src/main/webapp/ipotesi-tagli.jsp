@@ -52,6 +52,15 @@ List<TabPar> valoriSanzione = new ArrayList<>(
 	        TabPar.TYPE_INTERESSI
 	    )
 	);
+
+	Comparator<TabPar> ordinamentoNumericoAscendente =
+	    Comparator.comparing(
+	        TabPar::getValue,
+	        Comparator.nullsLast(Comparator.naturalOrder())
+	    );
+
+	valoriSanzione.sort(ordinamentoNumericoAscendente);
+	valoriInteressi.sort(ordinamentoNumericoAscendente);
 	
 	
 
