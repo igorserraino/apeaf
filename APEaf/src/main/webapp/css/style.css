@@ -1525,3 +1525,121 @@ input {
             font-size: 0.875rem;
         }
     }
+    
+     .riflessi-bilancio-card {
+        overflow: hidden;
+    }
+
+    .riflessi-bilancio-table {
+        width: 100%;
+        min-width: 820px;
+        margin-bottom: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+        color: #092b62;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .riflessi-bilancio-table col.col-descrizione {
+        width: 42%;
+    }
+
+    .riflessi-bilancio-table col.col-importo {
+        width: 19.333%;
+    }
+
+    .riflessi-bilancio-table th,
+    .riflessi-bilancio-table td {
+        padding: 0.65rem 0.8rem;
+        border: 1px solid #5f6368;
+        vertical-align: middle;
+    }
+
+    .riflessi-bilancio-table .empty-header {
+        border: 0;
+        background: transparent;
+    }
+
+    .riflessi-bilancio-table .section-header {
+        background: #d9d9d9;
+        color: #111111;
+        text-align: center;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .percentage-header {
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .group-title {
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: left;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .description-cell {
+        background: #f2f2f2;
+        color: #092b62;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .amount-cell {
+        background: #dce9f7;
+        color: #3d477d;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .riflessi-bilancio-table .impact-label {
+        background: #d9d9d9;
+        color: #092b62;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .impact-value {
+        background: #f8d7da;
+        color: #842029;
+        text-align: right;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .riflessi-bilancio-table .totals-title {
+        background: #9dc3e6;
+        color: #ffffff;
+        text-align: left;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .total-row .description-cell,
+    .riflessi-bilancio-table .total-row .amount-cell {
+        font-weight: 700;
+    }
+
+    .riflessi-bilancio-table .separator-row td {
+        height: 1.8rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    @media (max-width: 767.98px) {
+        .riflessi-bilancio-card {
+            padding: 1rem !important;
+        }
+
+        .riflessi-bilancio-table {
+            font-size: 0.875rem;
+        }
+    }

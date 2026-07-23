@@ -332,7 +332,7 @@ if (!pageData.hasSelectedYear()) {
         <div class="tab-ruoli-group overall-totals-group">
             <div class="tab-ruoli-title">
                 <i class="bi bi-calculator-fill"></i>
-                <span>TOTALI GENERALI</span>
+                <span>TOTALE RUOLI</span>
             </div>
 
             <div class="tab-ruoli-container">
@@ -343,7 +343,7 @@ if (!pageData.hasSelectedYear()) {
                             <th colspan="4" class="table-warning">TOTALI RUOLI COATTIVI</th>
                             <th colspan="4" class="table-secondary">IMPORTI RISCOSSI</th>
                             <th rowspan="2">RESIDUI RUOLI<br />DA RISCUOTERE</th>
-                            <th rowspan="2">MEDIA % RISCOSSO</th>
+                            <th rowspan="2"></th>
                         </tr>
                         <tr>
                             <th colspan="5">TUTTE LE ENTRATE</th>
@@ -360,7 +360,7 @@ if (!pageData.hasSelectedYear()) {
 
                     <tbody>
                         <tr class="totals-row overall-totals-row">
-                            <td colspan="5" class="text-end">TOTALI GENERALI</td>
+                            <td colspan="5" class="text-end">TOTALE RUOLI</td>
                             <td class="text-number"><%= overallTotals.getRoleTax() %></td>
                             <td class="text-number"><%= overallTotals.getRoleSanctions() %></td>
                             <td class="text-number"><%= overallTotals.getRoleInterest() %></td>
@@ -370,6 +370,7 @@ if (!pageData.hasSelectedYear()) {
                             <td class="text-number"><%= overallTotals.getCollectedInterest() %></td>
                             <td class="text-number"><%= overallTotals.getCollectedAmount() %></td>
                             <td class="text-number"><%= overallTotals.getResidual() %></td>
+                            <!--  
                             <td class="text-number">
                                 <% if (overallTotals.hasAveragePercentage()) { %>
                                     <%= overallTotals.getAveragePercentage() %>% <small>(media)</small>
@@ -377,6 +378,9 @@ if (!pageData.hasSelectedYear()) {
                                     -
                                 <% } %>
                             </td>
+                            -->
+                            
+                            <td class="text-number">Totale da riscuotere</td>
                         </tr>
                     </tbody>
                 </table>

@@ -243,7 +243,7 @@
 			    <i class="bi bi-calculator"></i>
             <span>quota FCDE liberata</span>           
         </a> 
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?riflessi-bilancio" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>riflessi sul bilancio</span>           
         </a> 
