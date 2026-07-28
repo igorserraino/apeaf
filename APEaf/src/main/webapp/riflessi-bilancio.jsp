@@ -6,7 +6,7 @@
 <%
 request.getSession().setAttribute(
         SessionVariables.CALLER,
-        "quota-fcde-liberata.jsp");
+        "riflessi-bilancio.jsp");
 
 UserView user = (UserView) request.getSession().getAttribute("ubAP");
 if (user == null || !user.getActive()) {
@@ -16,21 +16,27 @@ if (user == null || !user.getActive()) {
 
 %>
  
+<div class="page-container">
+
+    <div class="watermark">
+        <i class="bi bi-tools"></i>
+        <span>IN LAVORAZIONE DATI STATICI</span>
+    </div>
 
 <h3 class="mb-4">
-    <i class="bi bi-calculator"></i> IMPATTO SUL BILANCIO
+    <i class="bi bi-calculator"></i> RIFLESSI SUL BILANCIO
 </h3>
 
 <div class="rounded p-4 dati-card riflessi-bilancio-card mt-4">
     <div class="dati-header mb-3">
         <div class="dati-title dati-section-title">
             <i class="bi bi-table"></i>
-            <span>DATI COMPUTATI DA IPOTESI TAGLI E CALCOLO FCDE</span>
+            <span>DATI COMPUTATI DA </span>
         </div>
     </div>
 
     <div class="table-responsive">
-        <table class="riflessi-bilancio-table" aria-label="Impatto delle ipotesi di taglio sul bilancio">
+        <table class="riflessi-bilancio-table" aria-label="Impatto delle ipotesi di taglio sul bilancio" style="max-width:1200px">
             <colgroup>
                 <col class="col-descrizione" />
                 <col class="col-importo" />
@@ -272,4 +278,6 @@ if (user == null || !user.getActive()) {
             </tbody>
         </table>
     </div>
+</div>
+
 </div>

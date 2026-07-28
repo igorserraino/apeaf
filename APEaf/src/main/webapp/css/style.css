@@ -1537,7 +1537,7 @@ input {
         border-collapse: collapse;
         table-layout: fixed;
         color: #092b62;
-        font-size: 0.95rem;
+        font-size: 0.75rem;
         font-weight: 600;
     }
 
@@ -1565,7 +1565,7 @@ input {
         background: #d9d9d9;
         color: #111111;
         text-align: center;
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         font-weight: 700;
     }
 
@@ -1573,7 +1573,7 @@ input {
         background: #9dc3e6;
         color: #ffffff;
         text-align: center;
-        font-size: 1rem;
+        font-size: 0.75rem;
         font-weight: 700;
     }
 
@@ -1581,7 +1581,7 @@ input {
         background: #9dc3e6;
         color: #ffffff;
         text-align: left;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 700;
     }
 
@@ -1618,7 +1618,7 @@ input {
         background: #9dc3e6;
         color: #ffffff;
         text-align: left;
-        font-size: 1rem;
+        font-size: 0.75rem;
         font-weight: 700;
     }
 
@@ -1643,3 +1643,223 @@ input {
             font-size: 0.875rem;
         }
     }
+    
+    
+    
+    
+    /* =========================================================
+   VALUTAZIONE GENERALE
+   ========================================================= */
+
+.valutazione-generale-card {
+    margin-top: 22px;
+    overflow: hidden;
+}
+
+.valutazione-generale-table-wrapper {
+    width: 100%;
+    margin-top: 18px;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+.valutazione-generale-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.valutazione-generale-table th,
+.valutazione-generale-table td {
+    border: 1px solid #242424;
+    padding: 14px 18px;
+    vertical-align: middle;
+}
+
+/* Prima colonna */
+
+.valutazione-generale-table tbody th {
+    width: 40%;
+    text-align: left;
+    background: #ffffff;
+    color: #111111;
+        font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Colonne numeriche */
+
+.valutazione-generale-table tbody td {
+    width: 20%;
+    text-align: right;
+    background: #ffffff;
+    color: #111111;
+        font-size: 0.75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Cella vuota sopra le descrizioni */
+
+.valutazione-generale-empty-header {
+    width: 40%;
+    border-top: none !important;
+    border-left: none !important;
+    background: transparent !important;
+}
+
+/* Titolo azzurro */
+
+.valutazione-generale-main-header {
+    padding: 15px 20px !important;
+    text-align: center;
+    background: #dce8f5;
+    color: #082c6c;
+        font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+
+.valutazione-generale-main-header i {
+    margin-right: 7px;
+}
+
+/* Intestazione percentuali */
+
+.valutazione-generale-percentuale {
+    text-align: center;
+    background: #f3f3f3;
+    color: #050505;
+        font-size: 0.95rem;
+    font-weight: 800;
+    padding: 10px 15px !important;
+}
+
+.valutazione-generale-row-header {
+    background: transparent !important;
+}
+
+/* Riga risultato */
+
+.valutazione-generale-result-row th {
+    background: #3e2676 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+.valutazione-generale-result-row td {
+    padding: 13px 18px;
+    color: #ffff00;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+/* Risultato negativo */
+
+.valutazione-generale-result-row td.valutazione-generale-negative {
+    background: #ff1010;
+    color: #ffff00;
+}
+
+/* Risultato positivo */
+
+.valutazione-generale-result-row td.valutazione-generale-positive {
+    background: #198754;
+    color: #ffffff;
+}
+
+.valutazione-generale-result-row td {
+    display: table-cell;
+}
+
+.valutazione-generale-result-row td .valutazione-generale-sign {
+    float: left;
+    margin-right: 10px;
+}
+
+/* Hover sulle righe normali */
+
+.valutazione-generale-table tbody tr:not(.valutazione-generale-result-row):hover th,
+.valutazione-generale-table tbody tr:not(.valutazione-generale-result-row):hover td {
+    background: #f7f4fc;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media screen and (max-width: 1100px) {
+
+    .valutazione-generale-table tbody th {
+        font-size: 20px;
+    }
+
+    .valutazione-generale-table tbody td {
+        font-size: 21px;
+    }
+
+    .valutazione-generale-main-header {
+        font-size: 23px;
+    }
+
+    .valutazione-generale-percentuale {
+        font-size: 24px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    .valutazione-generale-card {
+        padding: 15px !important;
+    }
+
+    .valutazione-generale-table th,
+    .valutazione-generale-table td {
+        padding: 11px 13px;
+    }
+
+    .valutazione-generale-table-wrapper {
+        border: 1px solid #dddddd;
+    }
+}
+
+.watermark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+
+    opacity: 0.045;
+}
+
+.watermark i {
+    font-size: 240px;
+    color: #3e2676;
+}
+
+.watermark span {
+    margin-top: 20px;
+    font-size: 60px;
+    font-weight: 800;
+    letter-spacing: 8px;
+    color: #3e2676;
+}
+    
+    .page-container{
+    position:relative;
+}
+
+.page-content{
+    position:relative;
+    z-index:1;
+}

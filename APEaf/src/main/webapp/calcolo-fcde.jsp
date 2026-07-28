@@ -1,51 +1,73 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="is.five.apeaf.utils.SessionVariables" %>
-<%@ page import="is.five.apeaf.utils.SessionVariables" %>
-<%@ page import="is.five.apeaf.dao.model.UserView" %>
-<%@page import="is.five.apeaf.utils.Utils"%>
+<%@ page language="java"
+         contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
 
-<%@ page import="is.five.apeaf.dao.TabParDAO" %>
-<%@ page import="is.five.apeaf.dao.model.*" %>
-<%@ page import="java.util.*" %>
+<%@ page import="java.util.Locale" %>
 <%@ page import="java.math.BigDecimal" %>
 <%@ page import="java.math.RoundingMode" %>
 <%@ page import="java.text.DecimalFormat" %>
 <%@ page import="java.text.DecimalFormatSymbols" %>
-<%@ page import="is.five.apeaf.dao.*"%>
-<%@ page import="is.five.apeaf.dao.model.*"%>
-<%@ page import="is.five.apeaf.utils.*" %>
 
-<%@ page import="is.five.apeaf.controller.InsTabRuoliServlet" %>
-<%@ page import="is.five.apeaf.service.TabRuoliPageService" %>
-<%@ page import="is.five.apeaf.service.TabRuoliPageService.PageData" %>
-<%@ page import="is.five.apeaf.service.TabRuoliPageService.GroupData" %>
-<%@ page import="is.five.apeaf.service.TabRuoliPageService.RowData" %>
-<%@ page import="is.five.apeaf.service.TabRuoliPageService.TotalsData" %>
+<%@ page import="is.five.apeaf.dao.AnnoFinanziarioDAO" %>
+<%@ page import="is.five.apeaf.dao.InsResiduiAttiviDAO" %>
+<%@ page import="is.five.apeaf.dao.InsDatiFCDEDAO" %>
+<%@ page import="is.five.apeaf.dao.model.UserView" %>
+<%@ page import="is.five.apeaf.dao.model.InsResiduiAttivi" %>
+<%@ page import="is.five.apeaf.dao.model.InsDatiFCDE" %>
+<%@ page import="is.five.apeaf.utils.CSVUtils" %>
+<%@ page import="is.five.apeaf.utils.SessionVariables" %>
 
 <%
-request.getSession().setAttribute(SessionVariables.CALLER, "calcolo-fcde.jsp");
-UserView user = (UserView) request.getSession().getAttribute("ubAP");
-if (user == null || !user.getActive()) {
-	response.sendRedirect("index.jsp");
-	return;
-}
+    request.getSession().setAttribute(
+            SessionVariables.CALLER,
+            "calcolo-fcde.jsp"
+    );
 
-AnnoFinanziarioDAO anniDAO = new AnnoFinanziarioDAO();
-String id_anno_selezionato = session.getAttribute(SessionVariables.ANNO) != null
-		? (String) session.getAttribute(SessionVariables.ANNO)
-		: "";
-String anno_selezionato = "";
+    UserView user = (UserView) request
+            .getSession()
+            .getAttribute("ubAP");
 
-try {
-	if (id_anno_selezionato.length() > 0) {
-		anno_selezionato = String
-				.valueOf(anniDAO.findByID(Integer.parseInt(id_anno_selezionato)).getAnno());
-	}
-} catch (Exception exc) {
-}
+    if (user == null || !user.getActive()) {
+        response.sendRedirect("index.jsp");
+        return;
+    }
 
-if (anno_selezionato == null ||
-		anno_selezionato.trim().isEmpty()) {
+
+    /*
+     * Recupero dell'anno finanziario selezionato.
+     */
+    String idAnnoSelezionato = session.getAttribute(SessionVariables.ANNO) != null
+            ? String.valueOf(session.getAttribute(SessionVariables.ANNO))
+            : "";
+
+    String annoSelezionato = "";
+
+    try {
+
+        if (!idAnnoSelezionato.trim().isEmpty()) {
+
+            AnnoFinanziarioDAO anniDAO =
+                    new AnnoFinanziarioDAO();
+
+            annoSelezionato = String.valueOf(
+                    anniDAO
+                            .findByID(
+                                    Integer.parseInt(
+                                            idAnnoSelezionato.trim()
+                                    )
+                            )
+                            .getAnno()
+            );
+        }
+
+    } catch (Exception exc) {
+
+        annoSelezionato = "";
+    }
+
+
+    if (annoSelezionato == null ||
+            annoSelezionato.trim().isEmpty()) {
 %>
 
 <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4"
@@ -54,121 +76,139 @@ if (anno_selezionato == null ||
     <i class="bi bi-arrow-up-right-circle-fill fs-2 me-3"></i>
 
     <div>
-        <strong>Anno finanziario non selezionato.</strong><br />
+        <strong>Anno finanziario non selezionato.</strong>
+        <br />
         Seleziona l'anno finanziario dal menu in alto a destra.
     </div>
 
 </div>
 
 <%
-    return;
-}
-
-
-int anno;
-
-try {
-    anno = Integer.parseInt(
-		anno_selezionato.trim()
-    );
-
-} catch (NumberFormatException e) {
-%>
-
-<div class="alert alert-danger">
-    Anno finanziario non valido:
-    <strong><%= anno_selezionato %></strong>
-</div>
-
-<%
-    return;
-}
-
-
-List<TabPar> valoriSanzione = new ArrayList<>(TabParDAO.findByUserAndType(user.getId(), TabPar.TYPE_SANZIONE));
-
-List<TabPar> valoriInteressi = new ArrayList<>(TabParDAO.findByUserAndType(user.getId(), TabPar.TYPE_INTERESSI));
-
-while (valoriSanzione.size() < 3) {
-	TabPar parametro = new TabPar();
-	parametro.setValue(BigDecimal.ZERO);
-	parametro.setType(TabPar.TYPE_SANZIONE);
-
-	valoriSanzione.add(parametro);
-}
-
-while (valoriInteressi.size() < 3) {
-	TabPar parametro = new TabPar();
-	parametro.setValue(BigDecimal.ZERO);
-	parametro.setType(TabPar.TYPE_INTERESSI);
-
-	valoriInteressi.add(parametro);
-}
-
-DecimalFormat formatoItaliano3Decimali = new DecimalFormat("#,##0.000", DecimalFormatSymbols.getInstance(Locale.ITALY));
-formatoItaliano3Decimali.setRoundingMode(RoundingMode.HALF_UP);
-
-String[] valuesRES = { "0", "0", "0", "0", "0" };
-String[] valuesFCDE = { "0", "0", "0", "0", "0" };
-
-
-	InsResiduiAttivi residuiAttivi = InsResiduiAttiviDAO.findByUserAndAnno(user.getId(), anno);
-
-	if (residuiAttivi != null && residuiAttivi.getValue() != null && !residuiAttivi.getValue().trim().isEmpty()) {
-
-		String[] saved = residuiAttivi.getValue().split(";", -1);
-
-		for (int i = 0; i < saved.length && i < valuesRES.length; i++) {
-
-				if (saved[i] != null && !saved[i].trim().isEmpty()) {
-
-					valuesRES[i] = saved[i].trim();
-				}
-		}
-	}
-
-	 InsDatiFCDE datiFCDE =
-			 InsDatiFCDEDAO.findByUserAndAnno(
-                    user.getId(),
-                    Integer.parseInt(anno_selezionato)
-            );
-
-
-    if (datiFCDE != null &&
-			datiFCDE.getValue() != null &&
-        !datiFCDE.getValue().trim().isEmpty()) {
-
-        String[] saved =
-			datiFCDE
-                        .getValue()
-                        .split(";", -1);
-
-        for (
-                int i = 0;
-                i < saved.length && i < valuesFCDE.length;
-                i++
-        ) {
-
-            if (saved[i] != null &&
-                !saved[i].trim().isEmpty()) {
-
-		valuesFCDE[i] = saved[i].trim();
-            }
-        }
+        return;
     }
 
 
+    int anno;
+
+    try {
+
+        anno = Integer.parseInt(
+                annoSelezionato.trim()
+        );
+
+    } catch (NumberFormatException exc) {
+%>
+
+<div class="alert alert-danger" role="alert">
+
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+    Anno finanziario non valido:
+
+    <strong>
+        <%= annoSelezionato %>
+    </strong>
+
+</div>
+
+<%
+        return;
+    }
+
+
+    /*
+     * Formattazione italiana dei valori.
+     */
+    DecimalFormat formatoItaliano3Decimali =
+            new DecimalFormat(
+                    "#,##0.000",
+                    DecimalFormatSymbols.getInstance(
+                            Locale.ITALY
+                    )
+            );
+
+    formatoItaliano3Decimali.setRoundingMode(
+            RoundingMode.HALF_UP
+    );
+
+
+    /*
+     * Recupero dei record.
+     *
+     * Entrambi possono essere null se l'utente non ha ancora
+     * salvato dati per l'anno selezionato.
+     */
+    InsResiduiAttivi residuiAttivi = null;
+    InsDatiFCDE datiFCDE = null;
+
+    try {
+
+        residuiAttivi =
+                InsResiduiAttiviDAO.findByUserAndAnno(
+                        user.getId(),
+                        anno
+                );
+
+    } catch (Exception exc) {
+
+        residuiAttivi = null;
+    }
+
+    try {
+
+        datiFCDE =
+                InsDatiFCDEDAO.findByUserAndAnno(
+                        user.getId(),
+                        anno
+                );
+
+    } catch (Exception exc) {
+
+        datiFCDE = null;
+    }
+
+
+    /*
+     * Se il record o il relativo valore sono null,
+     * viene utilizzata una stringa CSV vuota.
+     */
     String csvResiduiAttivi =
             residuiAttivi != null &&
             residuiAttivi.getValue() != null
-                    ? residuiAttivi.getValue()
+                    ? residuiAttivi.getValue().trim()
                     : "";
 
     String csvDatiFCDE =
             datiFCDE != null &&
             datiFCDE.getValue() != null
-                    ? datiFCDE.getValue()
+                    ? datiFCDE.getValue().trim()
                     : "";
+
+
+    /*
+     * Descrizioni delle cinque tipologie di entrata.
+     */
+    String[] tipologieEntrata = {
+            "Accertamenti ICI",
+            "Accertamenti TASI",
+            "Accertamenti IMU",
+            "Tassa Rifiuti",
+            "CDS"
+    };
+
+
+    /*
+     * Array contenenti i valori da mostrare nella tabella.
+     */
+    BigDecimal[] importiResidui =
+            new BigDecimal[tipologieEntrata.length];
+
+    BigDecimal[] importiFCDE =
+            new BigDecimal[tipologieEntrata.length];
+
+    BigDecimal[] percentualiAccantonamento =
+            new BigDecimal[tipologieEntrata.length];
+
 
     BigDecimal totaleResiduiAttivi =
             BigDecimal.ZERO;
@@ -176,211 +216,310 @@ String[] valuesFCDE = { "0", "0", "0", "0", "0" };
     BigDecimal totaleFCDE =
             BigDecimal.ZERO;
 
-    for (int index = 0; index < 5; index++) {
+
+    /*
+     * Lettura sicura dei valori CSV.
+     *
+     * In caso di:
+     *
+     * - record null;
+     * - CSV null o vuoto;
+     * - campo mancante;
+     * - campo non numerico;
+     * - errore di conversione;
+     *
+     * il valore utilizzato è BigDecimal.ZERO.
+     */
+    for (int index = 0;
+         index < tipologieEntrata.length;
+         index++) {
+
+        BigDecimal residuo =
+                BigDecimal.ZERO;
+
+        BigDecimal fcde =
+                BigDecimal.ZERO;
+
+
+        try {
+
+            BigDecimal valoreResiduo =
+                    CSVUtils.getDecimalValue(
+                            csvResiduiAttivi,
+                            index
+                    );
+
+            if (valoreResiduo != null) {
+                residuo = valoreResiduo;
+            }
+
+        } catch (Exception exc) {
+
+            residuo = BigDecimal.ZERO;
+        }
+
+
+        try {
+
+            BigDecimal valoreFCDE =
+                    CSVUtils.getDecimalValue(
+                            csvDatiFCDE,
+                            index
+                    );
+
+            if (valoreFCDE != null) {
+                fcde = valoreFCDE;
+            }
+
+        } catch (Exception exc) {
+
+            fcde = BigDecimal.ZERO;
+        }
+
+
+        importiResidui[index] =
+                residuo;
+
+        importiFCDE[index] =
+                fcde;
+
+
+        /*
+         * La percentuale vale zero quando il residuo è zero,
+         * evitando divisioni per zero.
+         */
+        if (residuo.compareTo(BigDecimal.ZERO) != 0) {
+
+            percentualiAccantonamento[index] =
+                    fcde
+                            .multiply(
+                                    BigDecimal.valueOf(100)
+                            )
+                            .divide(
+                                    residuo,
+                                    3,
+                                    RoundingMode.HALF_UP
+                            );
+
+        } else {
+
+            percentualiAccantonamento[index] =
+                    BigDecimal.ZERO;
+        }
+
 
         totaleResiduiAttivi =
                 totaleResiduiAttivi.add(
-                    CSVUtils.getDecimalValue(
-                        csvResiduiAttivi,
-                        index
-                    )
+                        residuo
                 );
 
         totaleFCDE =
                 totaleFCDE.add(
-                    CSVUtils.getDecimalValue(
-                        csvDatiFCDE,
-                        index
-                    )
+                        fcde
                 );
     }
 
-    BigDecimal percentualeTotaleAccantonamento =
-            totaleResiduiAttivi.compareTo(BigDecimal.ZERO) != 0
-                    ? totaleFCDE
-                        .multiply(BigDecimal.valueOf(100))
-                        .divide(
-                            totaleResiduiAttivi,
-                            10,
-                            RoundingMode.HALF_UP
+
+    /*
+     * Percentuale complessiva.
+     */
+    BigDecimal percentualeTotaleAccantonamento;
+
+    if (totaleResiduiAttivi.compareTo(BigDecimal.ZERO) != 0) {
+
+        percentualeTotaleAccantonamento =
+                totaleFCDE
+                        .multiply(
+                                BigDecimal.valueOf(100)
                         )
-                    : BigDecimal.ZERO;
+                        .divide(
+                                totaleResiduiAttivi,
+                                3,
+                                RoundingMode.HALF_UP
+                        );
+
+    } else {
+
+        percentualeTotaleAccantonamento =
+                BigDecimal.ZERO;
+    }
 %>
 
 
 <h3 class="mb-4">
-    <i class="bi bi-calculator"></i> CALCOLO % ACCANTONAMENTO FCDE
-    <span class="badge bg-primary ms-2"><%= anno_selezionato %></span>
+
+    <i class="bi bi-calculator"></i>
+
+    CALCOLO % ACCANTONAMENTO FCDE
+
+    <span class="badge bg-primary ms-2">
+        <%= annoSelezionato %>
+    </span>
 
 </h3>
 
+
 <div class="rounded p-4 dati-card valutazione-ruoli-card mt-4">
+
     <div class="dati-header mb-3">
+
         <div class="dati-title dati-section-title">
+
             <i class="bi bi-table"></i>
-            <span>DATI COMPUTATI DA INS. RESIDUI ATTIVI E INS. DATI FCDE</span>
+
+            <span>
+                DATI COMPUTATI DA INS. RESIDUI ATTIVI E INS. DATI FCDE
+            </span>
+
         </div>
+
     </div>
 
+
     <div class="table-responsive">
+
         <table class="valutazione-ruoli-table"
-               aria-label="Confronto tra importi residui a bilancio e totale ruoli" style="max-width: 1200px">
+               aria-label="Confronto tra residui attivi e FCDE"
+               style="max-width: 1200px;">
+
             <colgroup>
                 <col class="col-tipologia" />
                 <col class="col-valore" />
                 <col class="col-valore" />
                 <col class="col-valore" />
-                <col class="col-valore" />
             </colgroup>
 
+
             <thead>
+
                 <tr>
-                    <th scope="col">TIPOLOGIA ENTRATA</th>
-                    <th scope="col">RESIDUI ATTIVI</th>
-                    <th scope="col">FCDE</th>
-                    <th scope="col">% ACCANTONAMENTO</th>
+
+                    <th scope="col">
+                        TIPOLOGIA ENTRATA
+                    </th>
+
+                    <th scope="col">
+                        RESIDUI ATTIVI
+                    </th>
+
+                    <th scope="col">
+                        FCDE
+                    </th>
+
+                    <th scope="col">
+                        % ACCANTONAMENTO
+                    </th>
+
                 </tr>
+
             </thead>
+
 
             <tbody>
 
+                <%
+                    for (int index = 0;
+                         index < tipologieEntrata.length;
+                         index++) {
+                %>
+
                 <tr>
-                    <th class="description-cell" scope="row">
-                        Accertamenti ICI
+
+                    <th class="description-cell"
+                        scope="row">
+
+                        <%= tipologieEntrata[index] %>
+
                     </th>
 
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(residuiAttivi.getValue(), 0).doubleValue()) %>
-                    </td>
 
                     <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(datiFCDE.getValue(), 0).doubleValue()) %>
-                    </td>
 
-
-
-                    <td class="percentage-cell">
-                        <%= formatoItaliano3Decimali.format(100*CSVUtils.getDecimalValue(datiFCDE.getValue(), 0).doubleValue()/CSVUtils.getDecimalValue(residuiAttivi.getValue(), 0).doubleValue()
-
-                        ) %>
-                    </td>
-                </tr>
-
-				<tr>
-                    <th class="description-cell" scope="row">
-                        Accertamenti TASI
-                    </th>
-
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(residuiAttivi.getValue(), 1).doubleValue()) %>
-                    </td>
-
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(datiFCDE.getValue(), 1).doubleValue()) %>
-                    </td>
-
-
-
-                    <td class="percentage-cell">
                         <%= formatoItaliano3Decimali.format(
-			100*CSVUtils.getDecimalValue(datiFCDE.getValue(), 1).doubleValue()/CSVUtils.getDecimalValue(residuiAttivi.getValue(), 1).doubleValue()
-
+                                importiResidui[index]
                         ) %>
-                    </td>
-                </tr>
 
-				<tr>
-                    <th class="description-cell" scope="row">
-                        Accertamenti IMU
-                    </th>
+                    </td>
+
 
                     <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(residuiAttivi.getValue(), 2).doubleValue()) %>
-                    </td>
 
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(datiFCDE.getValue(), 2).doubleValue()) %>
-                    </td>
+                        <%= formatoItaliano3Decimali.format(
+                                importiFCDE[index]
+                        ) %>
 
+                    </td>
 
 
                     <td class="percentage-cell">
-                        <%= formatoItaliano3Decimali.format(
-			100*CSVUtils.getDecimalValue(datiFCDE.getValue(), 2).doubleValue()/CSVUtils.getDecimalValue(residuiAttivi.getValue(), 2).doubleValue()
 
-                        ) %>
+                        <%= formatoItaliano3Decimali.format(
+                                percentualiAccantonamento[index]
+                        ) %>%
+
                     </td>
+
                 </tr>
 
-				<tr>
-                    <th class="description-cell" scope="row">
-                        Tassa Rifiuti
-                    </th>
+                <%
+                    }
+                %>
 
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(residuiAttivi.getValue(), 3).doubleValue()) %>
+
+                <tr class="table-spacer-row">
+
+                    <td colspan="4"
+                        style="height: 18px;
+                               padding: 0;
+                               border: none;
+                               background: transparent;">
                     </td>
 
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(datiFCDE.getValue(), 3).doubleValue()) %>
-                    </td>
-
-
-
-                    <td class="percentage-cell">
-                        <%= formatoItaliano3Decimali.format(
-			100*CSVUtils.getDecimalValue(datiFCDE.getValue(), 3).doubleValue()/CSVUtils.getDecimalValue(residuiAttivi.getValue(), 3).doubleValue()
-
-                        ) %>
-                    </td>
                 </tr>
 
-				<tr>
-                    <th class="description-cell" scope="row">
-                        CDS
-                    </th>
-
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(residuiAttivi.getValue(), 4).doubleValue()) %>
-                    </td>
-
-                    <td class="number-cell">
-                        <%= formatoItaliano3Decimali.format(CSVUtils.getDecimalValue(datiFCDE.getValue(), 4).doubleValue()) %>
-                    </td>
-
-
-
-                    <td class="percentage-cell">
-                        <%= formatoItaliano3Decimali.format(
-			100*CSVUtils.getDecimalValue(datiFCDE.getValue(), 4).doubleValue()/CSVUtils.getDecimalValue(residuiAttivi.getValue(), 4).doubleValue()
-
-                        ) %>
-                    </td>
-                </tr>
-                
-                <tr><td></td></tr>
 
                 <tr class="totals-row">
-                    <th class="total-label" scope="row">
+
+                    <th class="total-label"
+                        scope="row">
+
                         TOTALE
+
                     </th>
 
+
                     <td class="total-number">
+
                         <%= formatoItaliano3Decimali.format(
                                 totaleResiduiAttivi
                         ) %>
+
                     </td>
 
+
                     <td class="total-number">
+
                         <%= formatoItaliano3Decimali.format(
                                 totaleFCDE
                         ) %>
+
                     </td>
 
- 
+
+                    <td class="total-number percentage-cell">
+
+                        <%= formatoItaliano3Decimali.format(
+                                percentualeTotaleAccantonamento
+                        ) %>%
+
+                    </td>
+
                 </tr>
 
             </tbody>
+
         </table>
+
     </div>
+
 </div>

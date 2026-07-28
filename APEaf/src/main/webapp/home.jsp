@@ -247,7 +247,7 @@
 			    <i class="bi bi-calculator"></i>
             <span>riflessi sul bilancio</span>           
         </a> 
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?valutazione-generale" class="dropdown-item">
 			    <i class="bi bi-calculator"></i>
             <span>valutazione generale</span>           
         </a> 
@@ -485,7 +485,8 @@
 
 
 
-
+     	<table class="table table-responsive table-bottom-right">
+</table>
 
 			
      
