@@ -63,10 +63,16 @@ public class InsDatiFCDEServlet extends HttpServlet {
             StringJoiner values =
                     new StringJoiner(";");
 
-            for (int i = 0; i < NUMERO_CAMPI; i++) {
+
+            /*
+             * 5 campi standard.
+             */
+            for (int i = 0; i < 5; i++) {
 
                 String value =
-                        request.getParameter("risc_" + i);
+                        request.getParameter(
+                                "risc_" + i
+                        );
 
                 if (value == null ||
                     value.trim().isEmpty()) {
@@ -74,13 +80,77 @@ public class InsDatiFCDEServlet extends HttpServlet {
                     value = "0";
                 }
 
-                values.add(value.trim());
+                values.add(
+                        value.trim()
+                );
             }
 
+
             /*
-             * Inserisce il record se non esiste.
-             * Aggiorna il record se esiste già per idUser + anno.
+             * Tipologie dinamiche.
              */
+            String[] nuoveTipologie =
+                    request.getParameterValues(
+                            "nuova_tipologia[]"
+                    );
+
+            String[] nuoviValori =
+                    request.getParameterValues(
+                            "nuova_tipologia_valore[]"
+                    );
+
+
+            if (nuoveTipologie != null) {
+
+                for (int i = 0;
+                     i < nuoveTipologie.length;
+                     i++) {
+
+                    String tipologia =
+                            nuoveTipologie[i];
+
+                    if (tipologia == null ||
+                        tipologia.trim().isEmpty()) {
+
+                        continue;
+                    }
+
+
+                    /*
+                     * ; e = sono riservati
+                     * al nostro formato CSV.
+                     */
+                    tipologia =
+                            tipologia
+                                .trim()
+                                .replace(";", " ")
+                                .replace("=", " ");
+
+
+                    String valore = "0";
+
+                    if (nuoviValori != null &&
+                        i < nuoviValori.length &&
+                        nuoviValori[i] != null &&
+                        !nuoviValori[i]
+                            .trim()
+                            .isEmpty()) {
+
+                        valore =
+                                nuoviValori[i]
+                                    .trim();
+                    }
+
+
+                    values.add(
+                            tipologia
+                            + "="
+                            + valore
+                    );
+                }
+            }
+
+
             InsDatiFCDEDAO.saveOrUpdate(
                     user.getId(),
                     anno,

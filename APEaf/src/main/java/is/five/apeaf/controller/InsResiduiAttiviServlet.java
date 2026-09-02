@@ -19,7 +19,16 @@ public class InsResiduiAttiviServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private static final int NUMERO_CAMPI = 5;
+    /*
+     * Le prime 5 voci sono quelle standard:
+     *
+     * 0 = Accertamenti ICI
+     * 1 = Accertamenti TASI
+     * 2 = Accertamenti IMU
+     * 3 = Tassa Rifiuti
+     * 4 = CDS
+     */
+    private static final int NUMERO_CAMPI_STANDARD = 5;
 
     @Override
     protected void doPost(
@@ -36,49 +45,169 @@ public class InsResiduiAttiviServlet extends HttpServlet {
 
         UserView user =
                 (UserView) session.getAttribute("ubAP");
-        String anno_selezionato = (String)request.getSession().getAttribute("anno_selezionato");
 
-        if (session == null || user == null  || !user.getActive() || anno_selezionato==null || anno_selezionato.length()==0) {
+        String annoSelezionato =
+                (String) session.getAttribute("anno_selezionato");
+
+        if (user == null
+                || !user.getActive()
+                || annoSelezionato == null
+                || annoSelezionato.trim().isEmpty()) {
+
             response.sendRedirect("index.jsp");
             return;
         }
 
         try {
 
-
+            /*
+             * ANNO
+             */
             int anno;
 
             try {
+
                 anno = Integer.parseInt(
-                		anno_selezionato.trim()
+                        annoSelezionato.trim()
                 );
 
             } catch (NumberFormatException e) {
+
                 throw new IllegalArgumentException(
                         "Anno finanziario non valido."
                 );
             }
 
+
+            /*
+             * Costruzione CSV.
+             */
             StringJoiner values =
                     new StringJoiner(";");
 
-            for (int i = 0; i < NUMERO_CAMPI; i++) {
+
+            /*
+             * -------------------------------------------------
+             * 1. VOCI STANDARD
+             * -------------------------------------------------
+             */
+            for (
+                    int i = 0;
+                    i < NUMERO_CAMPI_STANDARD;
+                    i++
+            ) {
 
                 String value =
-                        request.getParameter("risc_" + i);
+                        request.getParameter(
+                                "risc_" + i
+                        );
 
-                if (value == null ||
-                    value.trim().isEmpty()) {
+                if (value == null
+                        || value.trim().isEmpty()) {
 
                     value = "0";
                 }
 
-                values.add(value.trim());
+                values.add(
+                        value.trim()
+                );
             }
 
+
             /*
-             * Inserisce il record se non esiste.
-             * Aggiorna il record se esiste già per idUser + anno.
+             * -------------------------------------------------
+             * 2. VOCI AGGIUNTIVE
+             * -------------------------------------------------
+             *
+             * Il JSP invierà:
+             *
+             * nuova_tipologia[]
+             * nuova_tipologia_valore[]
+             *
+             * Esempio:
+             *
+             * Canone patrimoniale
+             * 1500
+             *
+             * Verrà salvato:
+             *
+             * Canone patrimoniale=1500
+             */
+            String[] nuoveTipologie =
+                    request.getParameterValues(
+                            "nuova_tipologia[]"
+                    );
+
+            String[] nuoviValori =
+                    request.getParameterValues(
+                            "nuova_tipologia_valore[]"
+                    );
+
+
+            if (nuoveTipologie != null) {
+
+                for (
+                        int i = 0;
+                        i < nuoveTipologie.length;
+                        i++
+                ) {
+
+                    String tipologia =
+                            nuoveTipologie[i];
+
+                    if (tipologia == null
+                            || tipologia.trim().isEmpty()) {
+
+                        continue;
+                    }
+
+                    tipologia =
+                            tipologia.trim();
+
+
+                    /*
+                     * Evitiamo caratteri che romperebbero
+                     * il nostro CSV.
+                     */
+                    tipologia =
+                            tipologia
+                                .replace(";", " ")
+                                .replace("=", " ");
+
+
+                    String valore = "0";
+
+                    if (nuoviValori != null
+                            && i < nuoviValori.length
+                            && nuoviValori[i] != null
+                            && !nuoviValori[i]
+                                    .trim()
+                                    .isEmpty()) {
+
+                        valore =
+                                nuoviValori[i].trim();
+                    }
+
+
+                    /*
+                     * Formato:
+                     *
+                     * Nome tipologia=valore
+                     */
+                    values.add(
+                            tipologia
+                            + "="
+                            + valore
+                    );
+                }
+            }
+
+
+            /*
+             * Inserisce oppure aggiorna il record
+             * identificato da:
+             *
+             * idUser + anno
              */
             InsResiduiAttiviDAO.saveOrUpdate(
                     user.getId(),
@@ -86,22 +215,34 @@ public class InsResiduiAttiviServlet extends HttpServlet {
                     values.toString()
             );
 
+
             session.setAttribute(
                     InsResiduiAttiviServlet.class.getName(),
-                    "Residui attivi salvati correttamente per l'anno "
-                            + anno + "."
+
+                    "Residui attivi salvati correttamente "
+                    + "per l'anno "
+                    + anno
+                    + "."
             );
 
         } catch (Exception e) {
 
+            e.printStackTrace();
+
             session.setAttribute(
                     InsResiduiAttiviServlet.class.getName(),
+
                     "Errore durante il salvataggio: "
-                            + e.getMessage()
+                    + e.getMessage()
             );
         }
 
-		response.sendRedirect("home.jsp?" + request.getSession().getAttribute(SessionVariables.CALLER));
 
+        response.sendRedirect(
+                "home.jsp?"
+                + session.getAttribute(
+                        SessionVariables.CALLER
+                )
+        );
     }
 }

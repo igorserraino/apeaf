@@ -1,5 +1,7 @@
 package is.five.apeaf.dao;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -159,5 +161,80 @@ public class InsDatiFCDEDAO {
 
             throw e;
         }
+    }
+    
+    public static List<String> findTipologieByUserAndAnno(
+            int idUser,
+            int anno) {
+
+        List<String> tipologie = new ArrayList<>();
+
+        /*
+         * 1. Tipologie standard definite nel bean
+         */
+        Collections.addAll(
+                tipologie,
+                InsDatiFCDE.TIPOLOGIE
+        );
+
+
+        /*
+         * 2. Tipologie aggiuntive lette dal DB
+         */
+        InsDatiFCDE entity =
+                findByUserAndAnno(
+                        idUser,
+                        anno
+                );
+
+        if (entity == null ||
+            entity.getValue() == null ||
+            entity.getValue().trim().isEmpty()) {
+
+            return tipologie;
+        }
+
+
+        String[] tokens =
+                entity.getValue().split(";", -1);
+
+
+        for (String token : tokens) {
+
+            if (token == null) {
+                continue;
+            }
+
+            token = token.trim();
+
+            if (token.isEmpty()) {
+                continue;
+            }
+
+
+            /*
+             * Solo le voci custom hanno il formato:
+             *
+             * nome=valore
+             */
+            int pos = token.indexOf('=');
+
+            if (pos <= 0) {
+                continue;
+            }
+
+
+            String nomeTipologia =
+                    token.substring(0, pos).trim();
+
+            if (!nomeTipologia.isEmpty() &&
+                !tipologie.contains(nomeTipologia)) {
+
+                tipologie.add(nomeTipologia);
+            }
+        }
+
+
+        return tipologie;
     }
 }

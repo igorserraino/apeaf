@@ -8,6 +8,7 @@
 <%@ page import="is.five.apeaf.controller.InsResiduiAttiviServlet" %>
 <%@ page import="is.five.apeaf.dao.*"%>
 <%@ page import="is.five.apeaf.dao.model.*"%>
+<%@ page import="java.util.*"%>
 
 
 <%
@@ -82,9 +83,7 @@
     }
 
 
-    /*
-     * Valori iniziali di default.
-     */
+    
     String[] values = {
         "0",
         "0",
@@ -93,17 +92,14 @@
         "0"
     };
 
+    Map<String, String> tipologieAggiuntive =
+            new LinkedHashMap<String, String>();
 
-    /*
-     * La ricerca ora usa la chiave logica:
-     * id_user + anno.
-     */
     InsResiduiAttivi residuiAttivi =
             InsResiduiAttiviDAO.findByUserAndAnno(
                     user.getId(),
                     anno
             );
-
 
     if (residuiAttivi != null &&
         residuiAttivi.getValue() != null &&
@@ -111,22 +107,70 @@
 
         String[] saved =
                 residuiAttivi
-                        .getValue()
-                        .split(";", -1);
+                    .getValue()
+                    .split(";", -1);
 
-        for (
-                int i = 0;
-                i < saved.length && i < values.length;
-                i++
-        ) {
+        int posizioneFissa = 0;
 
-            if (saved[i] != null &&
-                !saved[i].trim().isEmpty()) {
+        for (String token : saved) {
 
-                values[i] = saved[i].trim();
+            if (token == null) {
+                continue;
+            }
+
+            token = token.trim();
+
+            if (token.isEmpty()) {
+                continue;
+            }
+
+            /*
+             * Tipologia dinamica:
+             *
+             * test=100
+             * Canone patrimoniale=250
+             */
+            if (token.contains("=")) {
+
+                String[] parts =
+                        token.split("=", 2);
+
+                String tipologia =
+                        parts[0].trim();
+
+                String valore =
+                        parts.length > 1
+                        ? parts[1].trim()
+                        : "0";
+
+                if (!tipologia.isEmpty()) {
+
+                    if (valore.isEmpty()) {
+                        valore = "0";
+                    }
+
+                    tipologieAggiuntive.put(
+                            tipologia,
+                            valore
+                    );
+                }
+
+            } else {
+
+                /*
+                 * Valori fissi posizionali.
+                 */
+                if (posizioneFissa < values.length) {
+
+                    values[posizioneFissa] =
+                            token;
+
+                    posizioneFissa++;
+                }
             }
         }
     }
+
 %>
 
 
@@ -207,7 +251,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        Accertamenti ICI
+                    	<%= InsResiduiAttivi.TIPOLOGIE[0] %>
                     </td>
 
                     <td>
@@ -228,7 +272,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        Accertamenti TASI
+                    	<%= InsResiduiAttivi.TIPOLOGIE[1] %>
                     </td>
 
                     <td>
@@ -248,7 +292,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        Accertamenti IMU
+                    	<%= InsResiduiAttivi.TIPOLOGIE[2] %>
                     </td>
 
                     <td>
@@ -268,7 +312,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        Tassa Rifiuti
+                    	<%= InsResiduiAttivi.TIPOLOGIE[3] %>
                     </td>
 
                     <td>
@@ -288,7 +332,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        CDS
+                    	<%= InsResiduiAttivi.TIPOLOGIE[4] %>
                     </td>
 
                     <td>
@@ -303,6 +347,71 @@
                     </td>
 
                 </tr>
+                
+                <%
+					    for (Map.Entry<String, String> entry :
+					            tipologieAggiuntive.entrySet()) {
+					%>
+					
+					<tr class="dynamic-tipologia">
+					
+					    <td class="fw-bold">
+					
+					        <input type="text" readonly
+					               name="nuova_tipologia[]"
+					               class="form-control form-control-sm"
+					               value="<%= entry.getKey() %>"
+					               required style="text-align:left"/>
+					
+					    </td>
+					
+					    <td>
+					
+					        <div class="input-group input-group-sm">
+					
+					            <input type="number" readonly
+					                   name="nuova_tipologia_valore[]"
+					                   class="form-control form-control-sm bg-dark text-white valore-dinamico"
+					                   value="<%= entry.getValue() %>"
+					                   min="0"
+					                   step="any"
+					                   required />
+					
+					            <button type="button"
+					                    class="btn btn-outline-danger"
+					                    onclick="this.closest('tr').remove(); updateTotal();">
+					
+					                <i class="bi bi-trash"></i>
+					
+					            </button>
+					
+					        </div>
+					
+					    </td>
+					
+					</tr>
+					
+					<%
+					    }
+					%>
+                
+                <tr id="rowNuovaTipologia">
+
+				    <td colspan="2">
+				
+				        <button type="button"
+				                class="btn btn-outline-primary btn-sm"
+				                onclick="aggiungiTipologia()">
+				
+				            <i class="bi bi-plus-circle me-1"></i>
+				
+				            Aggiungi tipologia
+				
+				        </button>
+				
+				    </td>
+				
+				</tr>
                 
                 <tr class="table-primary fw-bold">
 
@@ -339,6 +448,8 @@
     
 </form>
 
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -363,14 +474,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let total = 0;
 
-        valueInputs.forEach(function (input) {
+        /*
+         * Campi standard
+         */
+        document
+            .querySelectorAll(
+                'input[name^="risc_"]'
+            )
+            .forEach(function(input) {
 
-            const value = Number(input.value);
+                const value =
+                    Number(input.value);
 
-            if (Number.isFinite(value)) {
-                total += value;
-            }
-        });
+                if (Number.isFinite(value)) {
+                    total += value;
+                }
+            });
+
+
+        /*
+         * Campi dinamici
+         */
+        document
+            .querySelectorAll(
+                '.valore-dinamico'
+            )
+            .forEach(function(input) {
+
+                const value =
+                    Number(input.value);
+
+                if (Number.isFinite(value)) {
+                    total += value;
+                }
+            });
+
 
         totalOutput.textContent =
             italianNumberFormat.format(total);
@@ -383,4 +521,87 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateTotal();
 });
+</script>
+
+<script>
+
+function aggiungiTipologia() {
+
+    const tbody =
+        document.querySelector(
+            ".table-residui tbody"
+        );
+
+    const totalRow =
+        document.getElementById(
+            "rowNuovaTipologia"
+        );
+
+    const tr =
+        document.createElement("tr");
+
+    tr.className =
+        "dynamic-tipologia";
+
+    tr.innerHTML = `
+
+        <td>
+
+            <div class="input-group input-group-sm">
+
+                <input
+                    type="text"
+                    name="nuova_tipologia[]"
+                    class="form-control"
+                    placeholder="Nuova tipologia di entrata"
+                    required>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    onclick="this.closest('tr').remove(); updateTotal();">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </div>
+
+        </td>
+
+        <td>
+
+            <input
+                type="number"
+                name="nuova_tipologia_valore[]"
+                class="form-control form-control-sm bg-dark text-white valore-dinamico"
+                value="0"
+                min="0"
+                step="any"
+                required>
+
+        </td>
+    `;
+
+    tbody.insertBefore(
+        tr,
+        totalRow
+    );
+
+
+    /*
+     * Aggancia il calcolo totale
+     * al nuovo input.
+     */
+    const input =
+        tr.querySelector(
+            ".valore-dinamico"
+        );
+
+    input.addEventListener(
+        "input",
+        updateTotal
+    );
+}
+
 </script>

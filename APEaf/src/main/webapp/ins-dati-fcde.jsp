@@ -4,7 +4,7 @@
 
 <%@ page import="is.five.apeaf.utils.SessionVariables" %>
 <%@ page import="is.five.apeaf.utils.*" %>
-
+<%@ page import="java.util.*" %>
 <%@ page import="is.five.apeaf.controller.InsDatiFCDEServlet" %>
 <%@ page import="is.five.apeaf.dao.*"%>
 <%@ page import="is.five.apeaf.dao.model.*"%>
@@ -82,8 +82,9 @@
     }
 
 
+    
     /*
-     * Valori iniziali di default.
+     * Valori standard.
      */
     String[] values = {
         "0",
@@ -93,37 +94,100 @@
         "0"
     };
 
- 
-     InsDatiFCDE datiFCDE =
-			 InsDatiFCDEDAO.findByUserAndAnno(
+    /*
+     * Tipologie aggiuntive salvate come:
+     *
+     * Nome tipologia=valore
+     */
+    Map<String, String> tipologieAggiuntive =
+            new LinkedHashMap<String, String>();
+
+
+    InsDatiFCDE datiFCDE =
+            InsDatiFCDEDAO.findByUserAndAnno(
                     user.getId(),
                     anno
             );
 
 
     if (datiFCDE != null &&
-			datiFCDE.getValue() != null &&
+        datiFCDE.getValue() != null &&
         !datiFCDE.getValue().trim().isEmpty()) {
 
         String[] saved =
-			datiFCDE
-                        .getValue()
-                        .split(";", -1);
+                datiFCDE
+                    .getValue()
+                    .split(";", -1);
 
-        for (
-                int i = 0;
-                i < saved.length && i < values.length;
-                i++
-        ) {
+        int posizioneFissa = 0;
 
-            if (saved[i] != null &&
-                !saved[i].trim().isEmpty()) {
+        for (String token : saved) {
 
-                values[i] = saved[i].trim();
+            if (token == null) {
+                continue;
+            }
+
+            token = token.trim();
+
+            if (token.isEmpty()) {
+                continue;
+            }
+
+
+            /*
+             * Campo dinamico:
+             *
+             * Canone=100
+             * Recupero evasione=250
+             */
+            if (token.contains("=")) {
+
+                String[] parts =
+                        token.split("=", 2);
+
+                String tipologia =
+                        parts[0].trim();
+
+                String valore =
+                        parts.length > 1
+                        ? parts[1].trim()
+                        : "0";
+
+                if (!tipologia.isEmpty()) {
+
+                    if (valore.isEmpty()) {
+                        valore = "0";
+                    }
+
+                    tipologieAggiuntive.put(
+                            tipologia,
+                            valore
+                    );
+                }
+
+            } else {
+
+                /*
+                 * I primi 5 valori sono posizionali:
+                 *
+                 * ICI
+                 * TASI
+                 * IMU
+                 * TARI
+                 * CDS
+                 */
+                if (posizioneFissa < values.length) {
+
+                    values[posizioneFissa] =
+                            token;
+
+                    posizioneFissa++;
+                }
             }
         }
     }
 %>
+
 
 
 <h3 class="mb-4">
@@ -169,6 +233,8 @@
 %>
 
 
+
+
 <form action="ins-dati-fcde"
       method="post">
 
@@ -199,7 +265,7 @@
                 <tr>
 
                     <td class="fw-bold" style="width:300px">
-                         ICI
+                         <%= InsDatiFCDE.TIPOLOGIE[0] %>
                     </td>
 
                     <td>
@@ -220,7 +286,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                         TASI
+                         <%= InsDatiFCDE.TIPOLOGIE[1] %>
                     </td>
 
                     <td>
@@ -240,7 +306,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        IMU
+                         <%= InsDatiFCDE.TIPOLOGIE[2] %>
                     </td>
 
                     <td>
@@ -260,7 +326,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        TARI
+                         <%= InsDatiFCDE.TIPOLOGIE[3] %>
                     </td>
 
                     <td>
@@ -280,7 +346,7 @@
                 <tr>
 
                     <td class="fw-bold">
-                        CDS
+                         <%= InsDatiFCDE.TIPOLOGIE[4] %>
                     </td>
 
                     <td>
@@ -295,6 +361,77 @@
                     </td>
 
                 </tr>
+                
+                <%
+				    for (Map.Entry<String, String> entry :
+				            tipologieAggiuntive.entrySet()) {
+				%>
+				
+				<tr class="dynamic-tipologia">
+				
+				    <td class="fw-bold">
+				
+				        <div class="input-group input-group-sm">
+				
+				            <input type="text" readonly
+				                   name="nuova_tipologia[]"
+				                   class="form-control"
+				                   value="<%= entry.getKey() %>"
+				                   required style="text-align:left"/>
+
+				        </div>
+				
+				    </td>
+				
+				    <td>
+				    
+	     <div class="input-group input-group-sm">
+				    
+				
+				        <input type="number" readonly
+				               name="nuova_tipologia_valore[]"
+				               class="form-control form-control-sm bg-dark text-white valore-dinamico"
+				               value="<%= entry.getValue() %>"
+				               min="0"
+				               step="any"
+				               required />
+				               
+				                <button type="button"
+				                    class="btn btn-outline-danger"
+				                    onclick="rimuoviTipologia(this)">
+				
+				                <i class="bi bi-trash"></i>
+				
+				            </button>
+				
+									        </div>
+				
+				    </td>
+				
+				</tr>
+				
+				<%
+				    }
+				%>
+
+
+			<tr id="rowAggiungiTipologia">
+			
+			    <td colspan="2">
+			
+			        <button type="button"
+			                class="btn btn-outline-primary btn-sm"
+			                onclick="aggiungiTipologia()">
+			
+			            <i class="bi bi-plus-circle me-1"></i>
+			
+			            Aggiungi tipologia
+			
+			        </button>
+			
+			    </td>
+			
+			</tr>
 
                 <tr class="table-primary fw-bold">
 
@@ -331,51 +468,207 @@
 
 </form>
 
+
+
+
 <script>
+
 document.addEventListener("DOMContentLoaded", function () {
 
-    const valueInputs = document.querySelectorAll(
-        'input[name^="risc_"]'
-    );
+    const totalOutput =
+            document.getElementById(
+                "totaleFCDE"
+            );
 
-    const totalOutput = document.getElementById(
-        "totaleFCDE"
-    );
-
-    const italianNumberFormat = new Intl.NumberFormat(
-        "it-IT",
-        {
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3
-        }
-    );
+    const italianNumberFormat =
+            new Intl.NumberFormat(
+                "it-IT",
+                {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }
+            );
 
 
-    function updateTotalFCDE() {
+    window.updateTotalFCDE = function () {
 
         let total = 0;
 
-        valueInputs.forEach(function (input) {
 
-            const value = Number(input.value);
+        /*
+         * Campi standard:
+         *
+         * risc_0 ... risc_4
+         */
+        document
+            .querySelectorAll(
+                'input[name^="risc_"]'
+            )
+            .forEach(function (input) {
 
-            if (Number.isFinite(value)) {
-                total += value;
-            }
-        });
+                const value =
+                        Number(input.value);
+
+                if (Number.isFinite(value)) {
+                    total += value;
+                }
+            });
+
+
+        /*
+         * Campi aggiuntivi.
+         */
+        document
+            .querySelectorAll(
+                ".valore-dinamico"
+            )
+            .forEach(function (input) {
+
+                const value =
+                        Number(input.value);
+
+                if (Number.isFinite(value)) {
+                    total += value;
+                }
+            });
+
 
         totalOutput.textContent =
-            italianNumberFormat.format(total);
-    }
+                italianNumberFormat.format(
+                    total
+                );
+    };
 
 
-    valueInputs.forEach(function (input) {
-        input.addEventListener(
-            "input",
-            updateTotalFCDE
-        );
-    });
+    /*
+     * Listener sui campi standard.
+     */
+    document
+        .querySelectorAll(
+            'input[name^="risc_"]'
+        )
+        .forEach(function (input) {
+
+            input.addEventListener(
+                "input",
+                updateTotalFCDE
+            );
+        });
+
+
+    /*
+     * Listener sui campi dinamici
+     * caricati dal DB.
+     */
+    document
+        .querySelectorAll(
+            ".valore-dinamico"
+        )
+        .forEach(function (input) {
+
+            input.addEventListener(
+                "input",
+                updateTotalFCDE
+            );
+        });
+
 
     updateTotalFCDE();
 });
+
+
+function aggiungiTipologia() {
+
+    const tbody =
+            document.querySelector(
+                ".table-residui tbody"
+            );
+
+    const rowAggiungi =
+            document.getElementById(
+                "rowAggiungiTipologia"
+            );
+
+
+    const tr =
+            document.createElement("tr");
+
+    tr.className =
+            "dynamic-tipologia";
+
+
+    tr.innerHTML = `
+
+        <td class="fw-bold">
+
+            <div class="input-group input-group-sm">
+
+                <input
+                    type="text"
+                    name="nuova_tipologia[]"
+                    class="form-control"
+                    placeholder="Nuova tipologia FCDE"
+                    required />
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    onclick="rimuoviTipologia(this)">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </div>
+
+        </td>
+
+        <td>
+
+            <input
+                type="number"
+                name="nuova_tipologia_valore[]"
+                class="form-control form-control-sm bg-dark text-white valore-dinamico"
+                value="0"
+                min="0"
+                step="any"
+                required />
+
+        </td>
+    `;
+
+
+    tbody.insertBefore(
+        tr,
+        rowAggiungi
+    );
+
+
+    const input =
+            tr.querySelector(
+                ".valore-dinamico"
+            );
+
+    input.addEventListener(
+        "input",
+        updateTotalFCDE
+    );
+
+
+    updateTotalFCDE();
+}
+
+
+function rimuoviTipologia(button) {
+
+    const row =
+            button.closest("tr");
+
+    if (row) {
+        row.remove();
+    }
+
+    updateTotalFCDE();
+}
+
 </script>

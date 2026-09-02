@@ -13,6 +13,10 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "`ins-dati-fcde`")
 public class InsDatiFCDE {
+	
+	
+	public final static String TIPOLOGIE[] = {"ICI", "TASI", "IMU", "TARI", "CDS" };
+	
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +46,13 @@ public class InsDatiFCDE {
     	)
     	private Timestamp creationTimestamp;
 
-    public Integer getId() {
+    @Override
+	public String toString() {
+		return "InsDatiFCDE [id=" + id + ", anno=" + anno + ", value=" + value + ", idUser=" + idUser
+				+ ", creationTimestamp=" + creationTimestamp + "]";
+	}
+
+	public Integer getId() {
         return id;
     }
 

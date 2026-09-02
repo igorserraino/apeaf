@@ -13,6 +13,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "`ins-residui-attivi`")
 public class InsResiduiAttivi {
+	
+	public final static String TIPOLOGIE[] = {"Accertamenti ICI", "Accertamenti TASI", "Accertamenti IMU", "Tassi Rifiuti", "CDS" };
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
