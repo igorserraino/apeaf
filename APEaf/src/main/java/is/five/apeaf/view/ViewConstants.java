@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class ViewConstants {
 	
-	public final static String REV = "APEAF Rev. 260728a";
+	public final static String REV = "APEAF Rev. 260904a build on progress prototype";
 
 	public final static String MAIN_UPDATES = "->> lot of stuff...";
 	
