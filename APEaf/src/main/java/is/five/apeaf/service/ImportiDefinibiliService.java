@@ -320,7 +320,22 @@ public class ImportiDefinibiliService {
 
         public boolean hasSelectedYear() { return !selectedYear.trim().isEmpty(); }
         public String getSelectedYear() { return selectedYear; }
-        public List<GroupData> getGroups() { return groups; }
+
+        private List<GroupData> incoherentGroups;
+
+        public List<GroupData> getGroups() {
+            return groups;
+        }
+
+        public List<GroupData> getIncoherentGroups() {
+            return incoherentGroups;
+        }
+
+        public boolean hasIncoherentGroups() {
+            return incoherentGroups != null
+                && !incoherentGroups.isEmpty();
+        }
+        
         public boolean hasGroups() { return !groups.isEmpty(); }
         public String getTotalResidualTax() { return totalResidualTax; }
         public String getTotalResidualSanctions() { return totalResidualSanctions; }

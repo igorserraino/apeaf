@@ -114,4 +114,19 @@ public class Utils {
 	    return (BigDecimal) parsed;
 	}
 	
+	public static String formatTimestamp(java.sql.Timestamp ts) {
+
+	    if (ts == null) {
+	        return "";
+	    }
+
+	    java.text.SimpleDateFormat sdf =
+	        new java.text.SimpleDateFormat(
+	            "dd-MMM-yyyy HH:mm",
+	            java.util.Locale.ITALIAN
+	        );
+
+	    return sdf.format(ts);
+	}
+	
 }

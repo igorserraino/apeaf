@@ -1863,3 +1863,7 @@ input {
     position:relative;
     z-index:1;
 }
+
+#nonCoherentValues {
+    scroll-margin-top: 100px;
+}

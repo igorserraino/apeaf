@@ -205,6 +205,11 @@
         </a> 
     <hr />
     
+    <a href="home.jsp?def-tipologie.jsp" class="dropdown-item">
+            <i class="bi bi-tags"></i>
+            <span>def.tipologie</span>
+        </a>
+    
     <a href="home.jsp?ins-tab-ruoli.jsp" class="dropdown-item">
             <i class="bi bi-pencil-square"></i>
             <span>ins.tab.ruoli</span>

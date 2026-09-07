@@ -35,6 +35,7 @@
         <mapping class="is.five.apeaf.dao.model.InsTabRuoli"/> 
         <mapping class="is.five.apeaf.dao.model.InsResiduiAttivi"/> 
         <mapping class="is.five.apeaf.dao.model.InsDatiFCDE"/> 
+        <mapping class="is.five.apeaf.dao.model.Tipologia"/> 
         
     </session-factory>
 </hibernate-configuration>

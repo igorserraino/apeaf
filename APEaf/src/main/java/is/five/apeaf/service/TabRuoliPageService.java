@@ -3,9 +3,11 @@ package is.five.apeaf.service;
 import is.five.apeaf.dao.AnnoFinanziarioDAO;
 import is.five.apeaf.dao.InsTabRuoliDAO;
 import is.five.apeaf.dao.TabParDAO;
+import is.five.apeaf.dao.TipologieDAO;
 import is.five.apeaf.dao.model.Entrata;
 import is.five.apeaf.dao.model.InsTabRuoli;
 import is.five.apeaf.dao.model.TabPar;
+import is.five.apeaf.dao.model.Tipologia;
 import is.five.apeaf.dao.model.UserView;
 
 import java.math.BigDecimal;
@@ -20,7 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Loads and prepares all server-side data used by ins-tab-ruoli.jsp.
@@ -45,123 +49,390 @@ public class TabRuoliPageService {
     private static final int IDX_PERCENTUALE_RISCOSSO = 14;
 
     public PageData load(UserView user, String selectedYearId) {
+
         String selectedYear = findSelectedYear(selectedYearId);
 
-        if (selectedYear.trim().isEmpty()) {
+        if (selectedYear == null || selectedYear.trim().isEmpty()) {
             return PageData.withoutSelectedYear();
         }
 
-        // These two calls are retained because they were present in the JSP.
-        List<TabPar> sanctionValues = TabParDAO.findByUserAndType(
-                user.getId(), TabPar.TYPE_SANZIONE);
-        List<TabPar> interestValues = TabParDAO.findByUserAndType(
-                user.getId(), TabPar.TYPE_INTERESSI);
+        int anno = Integer.parseInt(selectedYear);
 
-        List<InsTabRuoli> roles = InsTabRuoliDAO.findByUserAndAnno(
-                user.getId(), Integer.parseInt(selectedYear));
+
+        /* =========================================================
+           PARAMETRI SANZIONI / INTERESSI
+           ========================================================= */
+
+        List<TabPar> sanctionValues =
+                TabParDAO.findByUserAndType(
+                        user.getId(),
+                        TabPar.TYPE_SANZIONE
+                );
+
+        List<TabPar> interestValues =
+                TabParDAO.findByUserAndType(
+                        user.getId(),
+                        TabPar.TYPE_INTERESSI
+                );
+
+
+        /* =========================================================
+           TIPOLOGIE DEFINITE PER UTENTE + ANNO
+
+           Queste sono le UNICHE categorie ammesse.
+           ========================================================= */
+
+        List<Tipologia> tipologie =
+                TipologieDAO.findByUserAndAnno(
+                        user.getId(),
+                        anno
+                );
+
+
+        Set<String> tipologieValide =
+                new TreeSet<String>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
+
+        List<String> entryOptions =
+                new ArrayList<String>();
+
+
+        if (tipologie != null) {
+
+            for (Tipologia tipologia : tipologie) {
+
+                if (tipologia == null ||
+                    tipologia.getValue() == null) {
+
+                    continue;
+                }
+
+                String value =
+                        tipologia.getValue().trim();
+
+                if (value.isEmpty()) {
+                    continue;
+                }
+
+                /*
+                 * TreeSet case-insensitive evita duplicati logici.
+                 */
+                if (tipologieValide.add(value)) {
+                    entryOptions.add(value);
+                }
+            }
+        }
+
+
+        /*
+         * Ordinamento alfabetico delle opzioni.
+         */
+        Collections.sort(
+                entryOptions,
+                String.CASE_INSENSITIVE_ORDER
+        );
+
+
+        /* =========================================================
+           RUOLI
+           ========================================================= */
+
+        List<InsTabRuoli> roles =
+                InsTabRuoliDAO.findByUserAndAnno(
+                        user.getId(),
+                        anno
+                );
+
 
         Map<String, List<ParsedRole>> rolesByEntry =
-                new TreeMap<String, List<ParsedRole>>(String.CASE_INSENSITIVE_ORDER);
+                new TreeMap<String, List<ParsedRole>>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
 
         if (roles != null) {
-            for (InsTabRuoli role : roles) {
-                ParsedRole parsedRole = parseRole(role);
-                String groupName = parsedRole.entry.isEmpty()
-                        ? "ENTRATA NON DEFINITA"
-                        : parsedRole.entry;
 
-                List<ParsedRole> group = rolesByEntry.get(groupName);
-                if (group == null) {
-                    group = new ArrayList<ParsedRole>();
-                    rolesByEntry.put(groupName, group);
+            for (InsTabRuoli role : roles) {
+
+                ParsedRole parsedRole =
+                        parseRole(role);
+
+
+                if (parsedRole == null) {
+                    continue;
                 }
+
+
+                String groupName =
+                        parsedRole.entry != null
+                                ? parsedRole.entry.trim()
+                                : "";
+
+
+                /*
+                 * IMPORTANTE:
+                 *
+                 * vengono accettati SOLO i ruoli la cui
+                 * tipologia è attualmente definita nella
+                 * tabella tipologie.
+                 *
+                 * Vecchie tipologie, valori vuoti o categorie
+                 * non più definite non vengono visualizzati.
+                 */
+                if (groupName.isEmpty() ||
+                    !tipologieValide.contains(groupName)) {
+
+                    continue;
+                }
+
+
+                /*
+                 * Recuperiamo il nome esattamente come configurato
+                 * nella tabella tipologie.
+                 *
+                 * Esempio:
+                 *
+                 * DB ruolo: "imu"
+                 * Tipologie: "IMU"
+                 *
+                 * verrà mostrato "IMU".
+                 */
+                String nomeConfigurato =
+                        findConfiguredName(
+                                tipologieValide,
+                                groupName
+                        );
+
+
+                List<ParsedRole> group =
+                        rolesByEntry.get(nomeConfigurato);
+
+
+                if (group == null) {
+
+                    group =
+                            new ArrayList<ParsedRole>();
+
+                    rolesByEntry.put(
+                            nomeConfigurato,
+                            group
+                    );
+                }
+
 
                 group.add(parsedRole);
             }
         }
 
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.ITALY);
-        DecimalFormat moneyFormat = new DecimalFormat("#,##0.00", symbols);
-        DecimalFormat percentFormat = new DecimalFormat("#,##0.00", symbols);
 
-        List<GroupData> groups = new ArrayList<GroupData>();
-        TotalsAccumulator overallTotals = new TotalsAccumulator();
+        /* =========================================================
+           FORMATTAZIONE
+           ========================================================= */
 
-        for (Map.Entry<String, List<ParsedRole>> entry : rolesByEntry.entrySet()) {
-            List<ParsedRole> groupRoles = entry.getValue();
-            Collections.sort(groupRoles, new Comparator<ParsedRole>() {
-                @Override
-                public int compare(ParsedRole left, ParsedRole right) {
-                    return Integer.compare(left.sortYear, right.sortYear);
-                }
-            });
+        DecimalFormatSymbols symbols =
+                DecimalFormatSymbols.getInstance(
+                        Locale.ITALY
+                );
 
-            List<RowData> rows = new ArrayList<RowData>();
-            TotalsAccumulator groupTotals = new TotalsAccumulator();
+
+        DecimalFormat moneyFormat =
+                new DecimalFormat(
+                        "#,##0.00",
+                        symbols
+                );
+
+
+        DecimalFormat percentFormat =
+                new DecimalFormat(
+                        "#,##0.00",
+                        symbols
+                );
+
+
+        /* =========================================================
+           CREAZIONE GRUPPI
+           ========================================================= */
+
+        List<GroupData> groups =
+                new ArrayList<GroupData>();
+
+
+        TotalsAccumulator overallTotals =
+                new TotalsAccumulator();
+
+
+        for (Map.Entry<String, List<ParsedRole>> entry :
+                rolesByEntry.entrySet()) {
+
+
+            List<ParsedRole> groupRoles =
+                    entry.getValue();
+
+
+            Collections.sort(
+                    groupRoles,
+                    new Comparator<ParsedRole>() {
+
+                        @Override
+                        public int compare(
+                                ParsedRole left,
+                                ParsedRole right) {
+
+                            return Integer.compare(
+                                    left.sortYear,
+                                    right.sortYear
+                            );
+                        }
+                    }
+            );
+
+
+            List<RowData> rows =
+                    new ArrayList<RowData>();
+
+
+            TotalsAccumulator groupTotals =
+                    new TotalsAccumulator();
+
 
             for (ParsedRole role : groupRoles) {
+
+
                 groupTotals.add(role);
+
                 overallTotals.add(role);
 
-                rows.add(new RowData(
-                        role.id,
-                        role.entry,
-                        role.concessionaire,
-                        role.deliveryDate,
-                        role.roleYear,
-                        role.roleNumber,
-                        moneyFormat.format(role.roleTax),
-                        moneyFormat.format(role.roleSanctions),
-                        moneyFormat.format(role.roleInterest),
-                        moneyFormat.format(role.roleAmount),
-                        moneyFormat.format(role.collectedTax),
-                        moneyFormat.format(role.collectedSanctions),
-                        moneyFormat.format(role.collectedInterest),
-                        moneyFormat.format(role.collectedAmount),
-                        moneyFormat.format(role.residual),
-                        role.percentageStored.isEmpty()
-                                ? null
-                                : percentFormat.format(role.percentage)));
+
+                rows.add(
+                        new RowData(
+                                role.id,
+                                role.entry,
+                                role.concessionaire,
+                                role.deliveryDate,
+                                role.roleYear,
+                                role.roleNumber,
+                                moneyFormat.format(
+                                        role.roleTax
+                                ),
+                                moneyFormat.format(
+                                        role.roleSanctions
+                                ),
+                                moneyFormat.format(
+                                        role.roleInterest
+                                ),
+                                moneyFormat.format(
+                                        role.roleAmount
+                                ),
+                                moneyFormat.format(
+                                        role.collectedTax
+                                ),
+                                moneyFormat.format(
+                                        role.collectedSanctions
+                                ),
+                                moneyFormat.format(
+                                        role.collectedInterest
+                                ),
+                                moneyFormat.format(
+                                        role.collectedAmount
+                                ),
+                                moneyFormat.format(
+                                        role.residual
+                                ),
+                                role.percentageStored.isEmpty()
+                                        ? null
+                                        : percentFormat.format(
+                                                role.percentage
+                                        )
+                        )
+                );
             }
 
-            groups.add(new GroupData(
-                    entry.getKey(),
-                    rows,
-                    groupTotals.toData(moneyFormat, percentFormat)));
-            
-            Map<String, Integer> ordineEntrate = new HashMap<>();
 
-            ordineEntrate.put("ICI", 0);
-            ordineEntrate.put("TASI", 1);
-            ordineEntrate.put("IMU", 2);
-            ordineEntrate.put("TARI", 3);
-            ordineEntrate.put("SANZIONI CDS", 4);
-
-            groups.sort(
-                Comparator
-                    .comparingInt(
-                        (GroupData group) -> ordineEntrate.getOrDefault(
-                            group.getEntry().trim().toUpperCase(Locale.ROOT),
-                            Integer.MAX_VALUE
-                        )
-                    )
-                    .thenComparing(
-                        GroupData::getEntry,
-                        String.CASE_INSENSITIVE_ORDER
+            groups.add(
+                    new GroupData(
+                            entry.getKey(),
+                            rows,
+                            groupTotals.toData(
+                                    moneyFormat,
+                                    percentFormat
+                            )
                     )
             );
         }
 
-        List<String> entryOptions = new ArrayList<String>(
-                Arrays.asList(Entrata.values));
+
+        /* =========================================================
+           ORDINAMENTO GRUPPI
+
+           Nessun ordine fisso ICI/TASI/IMU/TARI.
+           Ora dipende interamente dalla configurazione DB.
+           ========================================================= */
+
+        Collections.sort(
+                groups,
+                new Comparator<GroupData>() {
+
+                    @Override
+                    public int compare(
+                            GroupData left,
+                            GroupData right) {
+
+                        String leftEntry =
+                                left.getEntry() != null
+                                        ? left.getEntry()
+                                        : "";
+
+                        String rightEntry =
+                                right.getEntry() != null
+                                        ? right.getEntry()
+                                        : "";
+
+                        return String.CASE_INSENSITIVE_ORDER.compare(
+                                leftEntry,
+                                rightEntry
+                        );
+                    }
+                }
+        );
+
+
+        /* =========================================================
+           PAGE DATA
+           ========================================================= */
 
         return new PageData(
                 selectedYear,
                 entryOptions,
                 groups,
-                overallTotals.toData(moneyFormat, percentFormat),
+                overallTotals.toData(
+                        moneyFormat,
+                        percentFormat
+                ),
                 sanctionValues,
-                interestValues);
+                interestValues
+        );
+    }
+    
+    private String findConfiguredName(
+            Set<String> configuredValues,
+            String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+        for (String configured : configuredValues) {
+
+            if (configured.equalsIgnoreCase(
+                    value.trim())) {
+
+                return configured;
+            }
+        }
+
+        return value.trim();
     }
 
     private String findSelectedYear(String selectedYearId) {

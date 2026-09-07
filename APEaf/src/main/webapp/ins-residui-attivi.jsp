@@ -6,220 +6,434 @@
 <%@ page import="is.five.apeaf.utils.*" %>
 
 <%@ page import="is.five.apeaf.controller.InsResiduiAttiviServlet" %>
-<%@ page import="is.five.apeaf.dao.*"%>
-<%@ page import="is.five.apeaf.dao.model.*"%>
-<%@ page import="java.util.*"%>
+
+<%@ page import="is.five.apeaf.dao.*" %>
+<%@ page import="is.five.apeaf.dao.model.*" %>
+
+<%@ page import="java.util.*" %>
 
 
 <%
-    request.getSession().setAttribute(
-            SessionVariables.CALLER,
-            "ins-residui-attivi.jsp"
-    );
 
-    UserView user =
-            (UserView) request
-                    .getSession()
-                    .getAttribute("ubAP");
+/* ============================================================
+   CALLER
+   ============================================================ */
 
-    if (user == null || !user.getActive()) {
-        response.sendRedirect("index.jsp");
-        return;
+request.getSession().setAttribute(
+    SessionVariables.CALLER,
+    "ins-residui-attivi.jsp"
+);
+
+
+/* ============================================================
+   USER
+   ============================================================ */
+
+UserView user =
+    (UserView) request
+        .getSession()
+        .getAttribute("ubAP");
+
+if (user == null || !user.getActive()) {
+
+    response.sendRedirect("index.jsp");
+    return;
+}
+
+
+/* ============================================================
+   ANNO FINANZIARIO
+   ============================================================ */
+
+AnnoFinanziarioDAO anniDAO =
+    new AnnoFinanziarioDAO();
+
+
+String id_anno_selezionato =
+    session.getAttribute(SessionVariables.ANNO) != null
+        ? String.valueOf(
+            session.getAttribute(SessionVariables.ANNO)
+          )
+        : "";
+
+
+String anno_selezionato = "";
+
+
+try {
+
+    if (!id_anno_selezionato.trim().isEmpty()) {
+
+        anno_selezionato =
+            String.valueOf(
+                anniDAO
+                    .findByID(
+                        Integer.parseInt(
+                            id_anno_selezionato
+                        )
+                    )
+                    .getAnno()
+            );
     }
 
+} catch (Exception exc) {
 
-    AnnoFinanziarioDAO anniDAO = new AnnoFinanziarioDAO();
-    String id_anno_selezionato = session.getAttribute(SessionVariables.ANNO) != null
-    		? (String) session.getAttribute(SessionVariables.ANNO)
-    		: "";
-    String anno_selezionato = "";
+    anno_selezionato = "";
+}
 
-    try {
-    	if (id_anno_selezionato.length() > 0) {
-    		anno_selezionato = String
-    				.valueOf(anniDAO.findByID(Integer.parseInt(id_anno_selezionato)).getAnno());
-    	}
-    } catch (Exception exc) {
-    }
 
-    if (anno_selezionato == null ||
-    		anno_selezionato.trim().isEmpty()) {
+/* ============================================================
+   NESSUN ANNO
+   ============================================================ */
+
+if (anno_selezionato == null ||
+    anno_selezionato.trim().isEmpty()) {
+
 %>
 
-    <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4"
-         role="alert">
+<div class="alert alert-warning
+            d-flex
+            align-items-center
+            shadow-sm
+            mb-4"
+     role="alert">
 
-        <i class="bi bi-arrow-up-right-circle-fill fs-2 me-3"></i>
+    <i class="bi bi-arrow-up-right-circle-fill
+              fs-2
+              me-3">
+    </i>
 
-        <div>
-            <strong>Anno finanziario non selezionato.</strong><br />
-            Seleziona l'anno finanziario dal menu in alto a destra.
-        </div>
+    <div>
+
+        <strong>
+            Anno finanziario non selezionato.
+        </strong>
+
+        <br />
+
+        Seleziona l'anno finanziario
+        dal menu in alto a destra.
 
     </div>
 
+</div>
+
 <%
-        return;
-    }
+
+    return;
+}
 
 
-    int anno;
+/* ============================================================
+   CONVERSIONE ANNO
+   ============================================================ */
 
-    try {
-        anno = Integer.parseInt(
-        		anno_selezionato.trim()
+int anno;
+
+
+try {
+
+    anno =
+        Integer.parseInt(
+            anno_selezionato.trim()
         );
 
-    } catch (NumberFormatException e) {
+} catch (NumberFormatException e) {
+
 %>
 
-    <div class="alert alert-danger">
-        Anno finanziario non valido:
-        <strong><%= anno_selezionato %></strong>
-    </div>
+<div class="alert alert-danger">
+
+    Anno finanziario non valido:
+
+    <strong>
+        <%= anno_selezionato %>
+    </strong>
+
+</div>
 
 <%
-        return;
-    }
+
+    return;
+}
 
 
-    
-    String[] values = {
-        "0",
-        "0",
-        "0",
-        "0",
-        "0"
-    };
+/* ============================================================
+   TIPOLOGIE DEFINITE
 
-    Map<String, String> tipologieAggiuntive =
-            new LinkedHashMap<String, String>();
+   Le tipologie possono essere create/modificate SOLO
+   nella pagina "Def. tipologie".
 
-    InsResiduiAttivi residuiAttivi =
-            InsResiduiAttiviDAO.findByUserAndAnno(
-                    user.getId(),
-                    anno
-            );
+   Qui vengono semplicemente lette.
+   ============================================================ */
 
-    if (residuiAttivi != null &&
-        residuiAttivi.getValue() != null &&
-        !residuiAttivi.getValue().trim().isEmpty()) {
+List<Tipologia> tipologie =
+    TipologieDAO.findByUserAndAnno(
+        user.getId(),
+        anno
+    );
 
-        String[] saved =
-                residuiAttivi
-                    .getValue()
-                    .split(";", -1);
 
-        int posizioneFissa = 0;
+boolean hasTipologie =
+    tipologie != null &&
+    !tipologie.isEmpty();
 
-        for (String token : saved) {
 
-            if (token == null) {
-                continue;
+/* ============================================================
+   VALORI SALVATI
+
+   key   = nome tipologia
+   value = importo
+
+   Esempio:
+       IMU -> 150000
+       TARI -> 85000
+
+   ============================================================ */
+
+Map<String, String> valoriSalvati =
+    new LinkedHashMap<String, String>();
+
+
+InsResiduiAttivi residuiAttivi =
+    InsResiduiAttiviDAO.findByUserAndAnno(
+        user.getId(),
+        anno
+    );
+
+
+if (residuiAttivi != null &&
+    residuiAttivi.getValue() != null &&
+    !residuiAttivi.getValue().trim().isEmpty()) {
+
+
+    String[] saved =
+        residuiAttivi
+            .getValue()
+            .split(";", -1);
+
+
+    int legacyPosition = 0;
+
+
+    for (String token : saved) {
+
+        if (token == null) {
+            continue;
+        }
+
+
+        token = token.trim();
+
+
+        if (token.isEmpty()) {
+            continue;
+        }
+
+
+        /* ====================================================
+           NUOVO FORMATO
+
+           IMU=100
+           TARI=200
+           Canone patrimoniale=300
+           ==================================================== */
+
+        if (token.contains("=")) {
+
+
+            String[] parts =
+                token.split("=", 2);
+
+
+            String tipologia =
+                parts[0].trim();
+
+
+            String valore =
+                parts.length > 1
+                    ? parts[1].trim()
+                    : "0";
+
+
+            if (valore.isEmpty()) {
+                valore = "0";
             }
 
-            token = token.trim();
 
-            if (token.isEmpty()) {
-                continue;
+            if (!tipologia.isEmpty()) {
+
+                valoriSalvati.put(
+                    tipologia,
+                    valore
+                );
             }
 
-            /*
-             * Tipologia dinamica:
-             *
-             * test=100
-             * Canone patrimoniale=250
-             */
-            if (token.contains("=")) {
 
-                String[] parts =
-                        token.split("=", 2);
+        } else {
 
-                String tipologia =
-                        parts[0].trim();
 
-                String valore =
-                        parts.length > 1
-                        ? parts[1].trim()
-                        : "0";
+            /* =================================================
+               COMPATIBILITA' CON VECCHI RECORD
 
-                if (!tipologia.isEmpty()) {
+               Vecchio formato:
 
-                    if (valore.isEmpty()) {
-                        valore = "0";
-                    }
+               100;200;300;400;500
 
-                    tipologieAggiuntive.put(
-                            tipologia,
-                            valore
+               Se esistono ancora InsResiduiAttivi.TIPOLOGIE,
+               associamo le vecchie posizioni ai vecchi nomi.
+
+               Questa parte può essere rimossa una volta
+               migrati tutti i vecchi record.
+               ================================================= */
+
+            if (InsResiduiAttivi.TIPOLOGIE != null &&
+                legacyPosition <
+                    InsResiduiAttivi.TIPOLOGIE.length) {
+
+
+                String legacyTipologia =
+                    InsResiduiAttivi
+                        .TIPOLOGIE[legacyPosition];
+
+
+                if (legacyTipologia != null &&
+                    !legacyTipologia.trim().isEmpty()) {
+
+                    valoriSalvati.put(
+                        legacyTipologia.trim(),
+                        token
                     );
                 }
-
-            } else {
-
-                /*
-                 * Valori fissi posizionali.
-                 */
-                if (posizioneFissa < values.length) {
-
-                    values[posizioneFissa] =
-                            token;
-
-                    posizioneFissa++;
-                }
             }
+
+
+            legacyPosition++;
         }
     }
+}
 
 %>
 
+
+<!-- ============================================================
+     TITOLO
+     ============================================================ -->
 
 <h3 class="mb-4">
 
-    <i class="bi bi-sliders"></i>
+    <i class="bi bi-sliders me-2"></i>
 
-    RESIDUI ATTIVI 
+    RESIDUI ATTIVI
 
     <span class="badge bg-primary ms-2">
+
         <%= anno %>
+
     </span>
 
 </h3>
 
 
-<%
-    String message =
-            (String) session.getAttribute(
-                    InsResiduiAttiviServlet.class.getName()
-            );
 
-    if (message != null) {
+<!-- ============================================================
+     MESSAGGIO SERVLET
+     ============================================================ -->
+
+<%
+
+String message =
+    (String) session.getAttribute(
+        InsResiduiAttiviServlet.class.getName()
+    );
+
+
+if (message != null) {
+
 %>
 
-    <div class="alert alert-primary alert-dismissible fade show"
-         role="alert">
+<div class="alert alert-primary
+            alert-dismissible
+            fade show"
+     role="alert">
 
-        <%= message %>
+    <%= message %>
 
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Chiudi">
-        </button>
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Chiudi">
+    </button>
+
+</div>
+
+<%
+
+    session.removeAttribute(
+        InsResiduiAttiviServlet.class.getName()
+    );
+}
+
+%>
+
+
+
+<!-- ============================================================
+     NESSUNA TIPOLOGIA
+     ============================================================ -->
+
+<% if (!hasTipologie) { %>
+
+
+<div class="alert alert-warning
+            d-flex
+            align-items-center
+            shadow-sm
+            mb-4">
+
+    <i class="bi bi-exclamation-triangle-fill
+              fs-3
+              me-3">
+    </i>
+
+
+    <div>
+
+        <strong>
+
+            Nessuna tipologia definita
+            per l'anno <%= anno %>.
+
+        </strong>
+
+        <br />
+
+        Per inserire i residui attivi
+        è necessario definire prima almeno
+        una tipologia dalla pagina
+
+        <strong>
+            Def. tipologie
+        </strong>.
 
     </div>
 
-<%
-        session.removeAttribute(
-                InsResiduiAttiviServlet.class.getName()
-        );
-    }
-%>
+</div>
 
+
+<% } %>
+
+
+
+<!-- ============================================================
+     FORM
+     ============================================================ -->
 
 <form action="ins-residui-attivi"
       method="post">
- 
+
+
     <input type="hidden"
            name="anno"
            value="<%= anno %>" />
@@ -227,18 +441,33 @@
 
     <div class="table-responsive">
 
-    <table class="table table-bordered table-hover table-sm table-residui">
+
+        <table class="table
+                      table-bordered
+                      table-hover
+                      table-sm
+                      table-residui">
+
+
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
 
             <thead class="table-secondary">
 
                 <tr>
 
                     <th style="width:300px;">
+
                         TIPOLOGIA ENTRATA
+
                     </th>
 
+
                     <th style="width:180px;">
+
                         al 31/12/<%= anno %>
+
                     </th>
 
                 </tr>
@@ -248,185 +477,150 @@
 
             <tbody>
 
-                <tr>
 
-                    <td class="fw-bold">
-                    	<%= InsResiduiAttivi.TIPOLOGIE[0] %>
-                    </td>
+                <!-- =============================================
+                     TIPOLOGIE DEFINITE
+                     ============================================= -->
 
-                    <td>
-
-                       <input type="number"
-						       name="risc_0"
-                           class="form-control form-control-sm bg-dark text-white"
-						       value="<%= values[0] %>"
-						       min="0"
-						       step="any"
-						       required />
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td class="fw-bold">
-                    	<%= InsResiduiAttivi.TIPOLOGIE[1] %>
-                    </td>
-
-                    <td>
-
-                        <input type="number"
-                               name="risc_1"
-                           class="form-control form-control-sm bg-dark text-white"
-                            value="<%= values[1] %>" min="0"
-						       step="any"
-						       required />
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td class="fw-bold">
-                    	<%= InsResiduiAttivi.TIPOLOGIE[2] %>
-                    </td>
-
-                    <td>
-
-                        <input type="number"
-                               name="risc_2"
-                           class="form-control form-control-sm bg-dark text-white"
-                               value="<%= values[2] %>" min="0"
-						       step="any"
-						       required />
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td class="fw-bold">
-                    	<%= InsResiduiAttivi.TIPOLOGIE[3] %>
-                    </td>
-
-                    <td>
-
-                        <input type="number"
-                               name="risc_3"
-                           class="form-control form-control-sm bg-dark text-white"
-                               value="<%= values[3] %>" min="0"
-						       step="any"
-						       required />
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td class="fw-bold">
-                    	<%= InsResiduiAttivi.TIPOLOGIE[4] %>
-                    </td>
-
-                    <td>
-
-                        <input type="number"
-                               name="risc_4"
-                           class="form-control form-control-sm bg-dark text-white"
-                               value="<%= values[4] %>" min="0"
-						       step="any"
-						       required />
-
-                    </td>
-
-                </tr>
-                
                 <%
-					    for (Map.Entry<String, String> entry :
-					            tipologieAggiuntive.entrySet()) {
-					%>
-					
-					<tr class="dynamic-tipologia">
-					
-					    <td class="fw-bold">
-					
-					        <input type="text" readonly
-					               name="nuova_tipologia[]"
-					               class="form-control form-control-sm"
-					               value="<%= entry.getKey() %>"
-					               required style="text-align:left"/>
-					
-					    </td>
-					
-					    <td>
-					
-					        <div class="input-group input-group-sm">
-					
-					            <input type="number" readonly
-					                   name="nuova_tipologia_valore[]"
-					                   class="form-control form-control-sm bg-dark text-white valore-dinamico"
-					                   value="<%= entry.getValue() %>"
-					                   min="0"
-					                   step="any"
-					                   required />
-					
-					            <button type="button"
-					                    class="btn btn-outline-danger"
-					                    onclick="this.closest('tr').remove(); updateTotal();">
-					
-					                <i class="bi bi-trash"></i>
-					
-					            </button>
-					
-					        </div>
-					
-					    </td>
-					
-					</tr>
-					
-					<%
-					    }
-					%>
-                
-                <tr id="rowNuovaTipologia">
 
-				    <td colspan="2">
-				
-				        <button type="button"
-				                class="btn btn-outline-primary btn-sm"
-				                onclick="aggiungiTipologia()">
-				
-				            <i class="bi bi-plus-circle me-1"></i>
-				
-				            Aggiungi tipologia
-				
-				        </button>
-				
-				    </td>
-				
-				</tr>
-                
+                if (hasTipologie) {
+
+                    for (Tipologia tipologia : tipologie) {
+
+
+                        if (tipologia == null ||
+                            tipologia.getValue() == null ||
+                            tipologia.getValue()
+                                     .trim()
+                                     .isEmpty()) {
+
+                            continue;
+                        }
+
+
+                        String nomeTipologia =
+                            tipologia
+                                .getValue()
+                                .trim();
+
+
+                        String valore =
+                            valoriSalvati.get(
+                                nomeTipologia
+                            );
+
+
+                        if (valore == null ||
+                            valore.trim().isEmpty()) {
+
+                            valore = "0";
+                        }
+
+                %>
+
+
+                <tr>
+
+
+                    <!-- =========================================
+                         TIPOLOGIA
+
+                         Hidden field because user is NOT allowed
+                         to change/create the tipologia here.
+                         ========================================= -->
+
+                    <td class="fw-bold">
+
+
+                        <input type="hidden"
+                               name="nuova_tipologia[]"
+                               value="<%= nomeTipologia %>" />
+
+
+                        <div class="d-flex
+                                    align-items-center">
+
+
+                            <i class="bi bi-tag-fill
+                                      me-2
+                                      text-primary">
+                            </i>
+
+
+                            <span>
+
+                                <%= nomeTipologia %>
+
+                            </span>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- =========================================
+                         VALORE
+                         ========================================= -->
+
+                    <td>
+
+
+                        <input type="number"
+                               name="nuova_tipologia_valore[]"
+                               class="form-control
+                                      form-control-sm
+                                      bg-dark
+                                      text-white
+                                      valore-residuo"
+                               value="<%= valore %>"
+                               min="0"
+                               step="any"
+                               required />
+
+                    </td>
+
+                </tr>
+
+
+                <%
+
+                    }
+
+                }
+
+                %>
+
+
+
+                <!-- =============================================
+                     TOTALE
+                     ============================================= -->
+
                 <tr class="table-primary fw-bold">
 
+
                     <td>
+
                         TOTALE
+
                     </td>
 
+
                     <td class="text-end fs-6">
+
+
                         <output id="totaleResiduiAttivi"
                                 aria-live="polite">
+
                             0,00
+
                         </output>
+
                     </td>
 
                 </tr>
+
 
             </tbody>
 
@@ -435,9 +629,17 @@
     </div>
 
 
-    <button type="submit"
 
-            class="btn btn-primary btn-sm mt-2">
+    <!-- ========================================================
+         SALVA
+         ======================================================== -->
+
+    <button type="submit"
+            class="btn btn-primary btn-sm mt-2"
+            <%= !hasTipologie
+                ? "disabled"
+                : "" %>>
+
 
         <i class="bi bi-floppy-fill me-1"></i>
 
@@ -445,163 +647,105 @@
 
     </button>
 
-    
+
 </form>
 
 
 
+<!-- ============================================================
+     JAVASCRIPT TOTALI
+     ============================================================ -->
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
 
-    const valueInputs = document.querySelectorAll(
-        'input[name^="risc_"]'
-    );
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    const totalOutput = document.getElementById(
-        "totaleResiduiAttivi"
-    );
 
-    const italianNumberFormat = new Intl.NumberFormat(
-        "it-IT",
-        {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+        const totalOutput =
+            document.getElementById(
+                "totaleResiduiAttivi"
+            );
+
+
+        const italianNumberFormat =
+            new Intl.NumberFormat(
+                "it-IT",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
+
+
+        /* =====================================================
+           CALCOLO TOTALE
+           ===================================================== */
+
+        function updateTotal() {
+
+
+            let total = 0;
+
+
+            document
+                .querySelectorAll(
+                    ".valore-residuo"
+                )
+                .forEach(
+                    function(input) {
+
+
+                        const value =
+                            Number(
+                                input.value
+                            );
+
+
+                        if (Number.isFinite(value)) {
+
+                            total += value;
+                        }
+
+                    }
+                );
+
+
+            if (totalOutput) {
+
+                totalOutput.textContent =
+                    italianNumberFormat.format(
+                        total
+                    );
+            }
         }
-    );
 
 
-    function updateTotal() {
+        /* =====================================================
+           LISTENER
+           ===================================================== */
 
-        let total = 0;
-
-        /*
-         * Campi standard
-         */
         document
             .querySelectorAll(
-                'input[name^="risc_"]'
+                ".valore-residuo"
             )
-            .forEach(function(input) {
+            .forEach(
+                function(input) {
 
-                const value =
-                    Number(input.value);
 
-                if (Number.isFinite(value)) {
-                    total += value;
+                    input.addEventListener(
+                        "input",
+                        updateTotal
+                    );
+
                 }
-            });
+            );
 
 
-        /*
-         * Campi dinamici
-         */
-        document
-            .querySelectorAll(
-                '.valore-dinamico'
-            )
-            .forEach(function(input) {
+        updateTotal();
 
-                const value =
-                    Number(input.value);
-
-                if (Number.isFinite(value)) {
-                    total += value;
-                }
-            });
-
-
-        totalOutput.textContent =
-            italianNumberFormat.format(total);
     }
-
-
-    valueInputs.forEach(function (input) {
-        input.addEventListener("input", updateTotal);
-    });
-
-    updateTotal();
-});
-</script>
-
-<script>
-
-function aggiungiTipologia() {
-
-    const tbody =
-        document.querySelector(
-            ".table-residui tbody"
-        );
-
-    const totalRow =
-        document.getElementById(
-            "rowNuovaTipologia"
-        );
-
-    const tr =
-        document.createElement("tr");
-
-    tr.className =
-        "dynamic-tipologia";
-
-    tr.innerHTML = `
-
-        <td>
-
-            <div class="input-group input-group-sm">
-
-                <input
-                    type="text"
-                    name="nuova_tipologia[]"
-                    class="form-control"
-                    placeholder="Nuova tipologia di entrata"
-                    required>
-
-                <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    onclick="this.closest('tr').remove(); updateTotal();">
-
-                    <i class="bi bi-trash"></i>
-
-                </button>
-
-            </div>
-
-        </td>
-
-        <td>
-
-            <input
-                type="number"
-                name="nuova_tipologia_valore[]"
-                class="form-control form-control-sm bg-dark text-white valore-dinamico"
-                value="0"
-                min="0"
-                step="any"
-                required>
-
-        </td>
-    `;
-
-    tbody.insertBefore(
-        tr,
-        totalRow
-    );
-
-
-    /*
-     * Aggancia il calcolo totale
-     * al nuovo input.
-     */
-    const input =
-        tr.querySelector(
-            ".valore-dinamico"
-        );
-
-    input.addEventListener(
-        "input",
-        updateTotal
-    );
-}
+);
 
 </script>
