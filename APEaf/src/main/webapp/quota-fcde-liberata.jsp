@@ -4,8 +4,6 @@
 
 <%@ page import="java.util.*" %>
 <%@ page import="java.math.BigDecimal" %>
-<%@ page import="java.text.DecimalFormat" %>
-<%@ page import="java.text.DecimalFormatSymbols" %>
 
 <%@ page import="is.five.apeaf.utils.SessionVariables" %>
 <%@ page import="is.five.apeaf.utils.Utils" %>
@@ -18,6 +16,7 @@
 <%@ page import="is.five.apeaf.service.QuotaFcdeLiberataService" %>
 <%@ page import="is.five.apeaf.service.QuotaFcdeLiberataService.ViewData" %>
 <%@ page import="is.five.apeaf.service.QuotaFcdeLiberataService.RowData" %>
+<%@ page import="is.five.apeaf.service.QuotaFcdeLiberataService.TotalsData" %>
 
 
 <%
@@ -42,22 +41,33 @@ UserView user =
         .getAttribute("ubAP");
 
 
-if (user == null || !user.getActive()) {
+if (user == null ||
+    !user.getActive()) {
 
-    response.sendRedirect("index.jsp");
+
+    response.sendRedirect(
+        "index.jsp"
+    );
+
     return;
 }
 
 
 /* ============================================================
-   ANNO SELEZIONATO
+   ANNO
    ============================================================ */
 
 String selectedYearId =
-    session.getAttribute(SessionVariables.ANNO) != null
+    session.getAttribute(
+        SessionVariables.ANNO
+    ) != null
+
         ? String.valueOf(
-            session.getAttribute(SessionVariables.ANNO)
+            session.getAttribute(
+                SessionVariables.ANNO
+            )
           )
+
         : "";
 
 
@@ -88,6 +98,7 @@ if (!viewData.hasSelectedYear()) {
             mb-4"
      role="alert">
 
+
     <i class="bi bi-arrow-up-right-circle-fill
               fs-2
               me-3">
@@ -96,16 +107,23 @@ if (!viewData.hasSelectedYear()) {
 
     <div>
 
+
         <strong>
+
             Anno finanziario non selezionato.
+
         </strong>
 
+
         <br />
+
 
         Seleziona l'anno finanziario
         dal menu in alto a destra.
 
+
     </div>
+
 
 </div>
 
@@ -125,12 +143,14 @@ Integer selectedYear;
 
 try {
 
+
     selectedYear =
         Integer.valueOf(
             viewData
                 .getSelectedYear()
                 .trim()
         );
+
 
 } catch (Exception exc) {
 
@@ -139,13 +159,20 @@ try {
 
 <div class="alert alert-danger">
 
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+    <i class="bi bi-exclamation-triangle-fill me-2">
+    </i>
+
 
     Anno finanziario non valido:
 
+
     <strong>
+
         <%= viewData.getSelectedYear() %>
+
     </strong>
+
 
 </div>
 
@@ -157,23 +184,10 @@ try {
 
 
 /* ============================================================
-   FORMATTAZIONE
+   TIPOLOGIE DEFINITE
    ============================================================ */
 
-DecimalFormat formatoItaliano3Decimali =
-    new DecimalFormat(
-        "#,##0.000",
-        DecimalFormatSymbols.getInstance(
-            Locale.ITALY
-        )
-    );
-
-
-/* ============================================================
-   TIPOLOGIE ATTUALMENTE DEFINITE
-   ============================================================ */
-
-List<Tipologia> tipologieDefinite =
+List<Tipologia> tipologie =
     TipologieDAO.findByUserAndAnno(
         user.getId(),
         selectedYear
@@ -186,10 +200,11 @@ Set<String> tipologieValide =
     );
 
 
-if (tipologieDefinite != null) {
+if (tipologie != null) {
+
 
     for (Tipologia tipologia :
-            tipologieDefinite) {
+            tipologie) {
 
 
         if (tipologia == null ||
@@ -216,13 +231,11 @@ if (tipologieDefinite != null) {
 
 
 /* ============================================================
-   RIGHE COERENTI / NON COERENTI
+   COERENTI / NON COERENTI
 
-   IMPORTANTE:
-   una riga non configurata viene considerata "non coerente"
-   solo se contiene almeno un valore numerico diverso da zero.
+   Normalmente il nuovo service restituisce già solo coerenti.
 
-   Le righe legacy completamente a zero vengono ignorate.
+   Manteniamo comunque il controllo per sicurezza.
    ============================================================ */
 
 List<RowData> righeCoerenti =
@@ -235,76 +248,72 @@ List<RowData> righeNonCoerenti =
 
 if (viewData.getRows() != null) {
 
+
     for (RowData row :
             viewData.getRows()) {
 
 
         if (row == null) {
+
             continue;
         }
 
 
-        String entry =
+        String nome =
             row.getEntry() != null
-                ? row.getEntry().trim()
+
+                ? row
+                    .getEntry()
+                    .trim()
+
                 : "";
 
 
-        /* ----------------------------------------------------
-           TIPOLOGIA VALIDA
-           ---------------------------------------------------- */
-
-        if (!entry.isEmpty() &&
-            tipologieValide.contains(entry)) {
+        if (!nome.isEmpty() &&
+            tipologieValide.contains(nome)) {
 
 
             righeCoerenti.add(
                 row
             );
 
+
             continue;
         }
 
 
         /* ----------------------------------------------------
-           TIPOLOGIA NON VALIDA
-
-           Verifichiamo se la riga contiene dati reali.
+           Non segnaliamo righe obsolete completamente a zero.
            ---------------------------------------------------- */
 
-        boolean contieneValoriSignificativi =
+        boolean significativo =
             false;
 
 
-        /* FCDE */
-
         try {
 
-            BigDecimal valore =
+
+            BigDecimal value =
                 Utils.parseItalianNumber(
                     row.getFcde()
                 );
 
 
-            if (valore != null &&
-                valore.compareTo(
+            significativo =
+                value != null &&
+                value.compareTo(
                     BigDecimal.ZERO
-                ) != 0) {
+                ) != 0;
 
-
-                contieneValoriSignificativi =
-                    true;
-            }
 
         } catch (Exception exc) {
 
-            // ignora
+            significativo =
+                false;
         }
 
 
-        /* SANZIONI + INTERESSI */
-
-        if (!contieneValoriSignificativi &&
+        if (!significativo &&
             row.getSanctionAndInterestValues() != null) {
 
 
@@ -314,23 +323,25 @@ if (viewData.getRows() != null) {
 
                 try {
 
-                    BigDecimal valore =
+
+                    BigDecimal parsed =
                         Utils.parseItalianNumber(
                             value
                         );
 
 
-                    if (valore != null &&
-                        valore.compareTo(
+                    if (parsed != null &&
+                        parsed.compareTo(
                             BigDecimal.ZERO
                         ) != 0) {
 
 
-                        contieneValoriSignificativi =
+                        significativo =
                             true;
 
                         break;
                     }
+
 
                 } catch (Exception exc) {
 
@@ -340,9 +351,7 @@ if (viewData.getRows() != null) {
         }
 
 
-        /* QUOTA FCDE LIBERATA */
-
-        if (!contieneValoriSignificativi &&
+        if (!significativo &&
             row.getReleasedFcdeValues() != null) {
 
 
@@ -352,23 +361,25 @@ if (viewData.getRows() != null) {
 
                 try {
 
-                    BigDecimal valore =
+
+                    BigDecimal parsed =
                         Utils.parseItalianNumber(
                             value
                         );
 
 
-                    if (valore != null &&
-                        valore.compareTo(
+                    if (parsed != null &&
+                        parsed.compareTo(
                             BigDecimal.ZERO
                         ) != 0) {
 
 
-                        contieneValoriSignificativi =
+                        significativo =
                             true;
 
                         break;
                     }
+
 
                 } catch (Exception exc) {
 
@@ -378,11 +389,7 @@ if (viewData.getRows() != null) {
         }
 
 
-        /*
-         * Aggiungiamo la riga tra i non coerenti
-         * solo se contiene almeno un valore significativo.
-         */
-        if (contieneValoriSignificativi) {
+        if (significativo) {
 
             righeNonCoerenti.add(
                 row
@@ -392,11 +399,7 @@ if (viewData.getRows() != null) {
 }
 
 
-/* ============================================================
-   STATO PAGINA
-   ============================================================ */
-
-boolean hasCoherentRows =
+boolean hasRows =
     !righeCoerenti.isEmpty();
 
 
@@ -404,195 +407,8 @@ boolean hasIncoherentRows =
     !righeNonCoerenti.isEmpty();
 
 
-/* ============================================================
-   DIMENSIONI ARRAY TOTALI
-   ============================================================ */
-
-int numeroValoriTaglio =
-    0;
-
-
-int numeroValoriLiberati =
-    0;
-
-
-if (hasCoherentRows) {
-
-
-    RowData firstRow =
-        righeCoerenti.get(0);
-
-
-    if (firstRow.getSanctionAndInterestValues() != null) {
-
-        numeroValoriTaglio =
-            firstRow
-                .getSanctionAndInterestValues()
-                .size();
-    }
-
-
-    if (firstRow.getReleasedFcdeValues() != null) {
-
-        numeroValoriLiberati =
-            firstRow
-                .getReleasedFcdeValues()
-                .size();
-    }
-}
-
-
-/* ============================================================
-   TOTALI
-   ============================================================ */
-
-BigDecimal totaleFcde =
-    BigDecimal.ZERO;
-
-
-BigDecimal[] totaliTaglio =
-    new BigDecimal[numeroValoriTaglio];
-
-
-BigDecimal[] totaliLiberati =
-    new BigDecimal[numeroValoriLiberati];
-
-
-for (int i = 0;
-     i < totaliTaglio.length;
-     i++) {
-
-
-    totaliTaglio[i] =
-        BigDecimal.ZERO;
-}
-
-
-for (int i = 0;
-     i < totaliLiberati.length;
-     i++) {
-
-
-    totaliLiberati[i] =
-        BigDecimal.ZERO;
-}
-
-
-/* ============================================================
-   CALCOLO TOTALI SOLO SULLE RIGHE COERENTI
-   ============================================================ */
-
-for (RowData row :
-        righeCoerenti) {
-
-
-    /* --------------------------------------------------------
-       FCDE
-       -------------------------------------------------------- */
-
-    try {
-
-        BigDecimal valoreFcde =
-            Utils.parseItalianNumber(
-                row.getFcde()
-            );
-
-
-        if (valoreFcde != null) {
-
-            totaleFcde =
-                totaleFcde.add(
-                    valoreFcde
-                );
-        }
-
-    } catch (Exception exc) {
-
-        // ignora
-    }
-
-
-    /* --------------------------------------------------------
-       SANZIONI + INTERESSI
-       -------------------------------------------------------- */
-
-    if (row.getSanctionAndInterestValues() != null) {
-
-
-        List<String> valori =
-            row.getSanctionAndInterestValues();
-
-
-        for (int i = 0;
-             i < valori.size() &&
-             i < totaliTaglio.length;
-             i++) {
-
-
-            try {
-
-                BigDecimal valore =
-                    Utils.parseItalianNumber(
-                        valori.get(i)
-                    );
-
-
-                if (valore != null) {
-
-                    totaliTaglio[i] =
-                        totaliTaglio[i].add(
-                            valore
-                        );
-                }
-
-            } catch (Exception exc) {
-
-                // ignora
-            }
-        }
-    }
-
-
-    /* --------------------------------------------------------
-       QUOTA FCDE LIBERATA
-       -------------------------------------------------------- */
-
-    if (row.getReleasedFcdeValues() != null) {
-
-
-        List<String> valori =
-            row.getReleasedFcdeValues();
-
-
-        for (int i = 0;
-             i < valori.size() &&
-             i < totaliLiberati.length;
-             i++) {
-
-
-            try {
-
-                BigDecimal valore =
-                    Utils.parseItalianNumber(
-                        valori.get(i)
-                    );
-
-
-                if (valore != null) {
-
-                    totaliLiberati[i] =
-                        totaliLiberati[i].add(
-                            valore
-                        );
-                }
-
-            } catch (Exception exc) {
-
-                // ignora
-            }
-        }
-    }
-}
+TotalsData totals =
+    viewData.getTotals();
 
 %>
 
@@ -604,7 +420,10 @@ for (RowData row :
 
 <h3 class="mb-4">
 
-    <i class="bi bi-calculator me-2"></i>
+
+    <i class="bi bi-calculator me-2">
+    </i>
+
 
     QUOTA FCDE LIBERATA
 
@@ -615,12 +434,13 @@ for (RowData row :
 
     </span>
 
+
 </h3>
 
 
 
 <!-- ============================================================
-     WARNING VALORI NON COERENTI
+     WARNING
      ============================================================ -->
 
 <% if (hasIncoherentRows) { %>
@@ -643,60 +463,36 @@ for (RowData row :
     <div class="flex-grow-1">
 
 
-        <div class="fw-bold mb-1">
+        <strong>
 
-            Sono presenti dati associati
+            Sono presenti dati relativi
             a tipologie non più definite.
 
-        </div>
-
-
-        <div>
-
-            Sono state individuate
-
-            <strong>
-                <%= righeNonCoerenti.size() %>
-            </strong>
-
-            tipologie storiche con valori effettivi
-            che non corrispondono alle tipologie
-            configurate per l'anno
-
-            <strong>
-                <%= selectedYear %>
-            </strong>.
-
-        </div>
+        </strong>
 
 
         <div class="mt-2">
 
-            Le righe legacy completamente a zero
-            vengono ignorate.
 
-            I valori indicati sotto invece
+            Questi valori non partecipano
+            al calcolo corrente.
 
-            <strong>
-                non vengono utilizzati nel calcolo
-                della quota FCDE liberata.
-            </strong>
 
         </div>
 
 
-        <button class="btn
-                       btn-outline-danger
+        <button type="button"
+                class="btn
                        btn-sm
+                       btn-outline-danger
                        mt-3"
-                type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#nonCoherentValuesFcde"
-                aria-expanded="false"
-                aria-controls="nonCoherentValuesFcde">
+                data-bs-target="#nonCoherentValuesFcde">
 
 
-            <i class="bi bi-eye-fill me-1"></i>
+            <i class="bi bi-eye-fill me-1">
+            </i>
+
 
             Mostra valori non coerenti
 
@@ -713,6 +509,7 @@ for (RowData row :
 
     </div>
 
+
 </div>
 
 
@@ -721,7 +518,7 @@ for (RowData row :
 
 
 <!-- ============================================================
-     CARD PRINCIPALE
+     CARD
      ============================================================ -->
 
 <div class="rounded
@@ -743,7 +540,8 @@ for (RowData row :
 
             <span>
 
-                DATI COMPUTATI DA CALCOLO FCDE E IPOTESI TAGLI
+                DATI COMPUTATI DA CALCOLO FCDE
+                E IPOTESI TAGLI
 
             </span>
 
@@ -761,10 +559,8 @@ for (RowData row :
         <div class="alert alert-warning mb-0">
 
 
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-
-            Nessuna tipologia definita per l'anno
+            Nessuna tipologia definita
+            per l'anno
 
             <strong>
                 <%= selectedYear %>
@@ -774,17 +570,13 @@ for (RowData row :
         </div>
 
 
-    <% } else if (!hasCoherentRows) { %>
+    <% } else if (!hasRows) { %>
 
 
         <div class="alert alert-info mb-0">
 
 
-            <i class="bi bi-info-circle-fill me-2"></i>
-
-
-            Nessun dato disponibile per le tipologie
-            attualmente definite.
+            Nessun dato disponibile.
 
 
         </div>
@@ -794,15 +586,11 @@ for (RowData row :
 
 
 
-    <!-- ========================================================
-         TABELLA PRINCIPALE
-         ======================================================== -->
-
     <div class="table-responsive">
 
 
         <table class="quota-fcde-table"
-               aria-label="Calcolo della quota FCDE liberata"
+               aria-label="Calcolo quota FCDE liberata"
                style="max-width:1500px">
 
 
@@ -839,10 +627,6 @@ for (RowData row :
 
 
 
-            <!-- =================================================
-                 HEADER SEZIONI
-                 ================================================= -->
-
             <thead>
 
 
@@ -855,8 +639,7 @@ for (RowData row :
 
 
                     <th class="section-header"
-                        colspan="3"
-                        scope="colgroup">
+                        colspan="3">
 
                         SANZIONI + INTERESSI
 
@@ -868,8 +651,7 @@ for (RowData row :
 
 
                     <th class="section-header"
-                        colspan="3"
-                        scope="colgroup">
+                        colspan="3">
 
                         QUOTA FCDE LIBERATA
 
@@ -880,23 +662,17 @@ for (RowData row :
 
 
 
-                <!-- =============================================
-                     HEADER COLONNE
-                     ============================================= -->
-
                 <tr>
 
 
-                    <th class="percentage-header"
-                        scope="col">
+                    <th class="percentage-header">
 
                         TIPOLOGIA
 
                     </th>
 
 
-                    <th class="percentage-header"
-                        scope="col">
+                    <th class="percentage-header">
 
                         Quota FCDE
 
@@ -911,8 +687,7 @@ for (RowData row :
                     </th>
 
 
-                    <th class="percentage-header"
-                        scope="col">
+                    <th class="percentage-header">
 
                         % FCDE
 
@@ -924,35 +699,30 @@ for (RowData row :
 
 
 
-                    <!-- =========================================
-                         PERCENTUALI SANZIONI
-                         ========================================= -->
+                    <!-- =================================================
+                         Le ipotesi sono identificate dal parametro
+                         SANZIONE.
+
+                         Il parametro INTERESSI corrispondente viene
+                         applicato internamente allo stesso indice.
+                         ================================================= -->
 
                     <%
 
-                    if (viewData.getSanctionPercentages() != null) {
-
-                        for (String percentage :
-                                viewData.getSanctionPercentages()) {
+                    for (String percentage :
+                            viewData.getSanctionPercentages()) {
 
                     %>
 
 
-                        <th class="percentage-header"
-                            scope="col">
+                        <th class="percentage-header">
 
                             <%= percentage %>
 
                         </th>
 
 
-                    <%
-
-                        }
-
-                    }
-
-                    %>
+                    <% } %>
 
 
 
@@ -961,35 +731,22 @@ for (RowData row :
 
 
 
-                    <!-- =========================================
-                         PERCENTUALI INTERESSI
-                         ========================================= -->
-
                     <%
 
-                    if (viewData.getInterestPercentages() != null) {
-
-                        for (String percentage :
-                                viewData.getInterestPercentages()) {
+                    for (String percentage :
+                            viewData.getSanctionPercentages()) {
 
                     %>
 
 
-                        <th class="percentage-header"
-                            scope="col">
+                        <th class="percentage-header">
 
                             <%= percentage %>
 
                         </th>
 
 
-                    <%
-
-                        }
-
-                    }
-
-                    %>
+                    <% } %>
 
 
                 </tr>
@@ -999,26 +756,20 @@ for (RowData row :
 
 
 
-            <!-- =================================================
-                 BODY
-                 ================================================= -->
-
             <tbody>
 
 
                 <tr class="separator-row"
                     aria-hidden="true">
 
+
                     <td colspan="11">
                     </td>
+
 
                 </tr>
 
 
-
-                <!-- =============================================
-                     RIGHE COERENTI
-                     ============================================= -->
 
                 <%
 
@@ -1031,17 +782,12 @@ for (RowData row :
                 <tr>
 
 
-                    <!-- TIPOLOGIA -->
-
                     <td class="description-cell">
 
                         <%= row.getEntry() %>
 
                     </td>
 
-
-
-                    <!-- FCDE -->
 
                     <td class="description-cell text-end">
 
@@ -1050,9 +796,6 @@ for (RowData row :
                     </td>
 
 
-
-                    <!-- PERCENTUALE FCDE -->
-
                     <td class="description-cell text-end">
 
                         <%= row.getFcdePercentage() %>
@@ -1060,22 +803,15 @@ for (RowData row :
                     </td>
 
 
-
                     <td class="spacer-cell">
                     </td>
 
 
 
-                    <!-- =========================================
-                         SANZIONI + INTERESSI
-                         ========================================= -->
-
                     <%
 
-                    if (row.getSanctionAndInterestValues() != null) {
-
-                        for (String value :
-                                row.getSanctionAndInterestValues()) {
+                    for (String value :
+                            row.getSanctionAndInterestValues()) {
 
                     %>
 
@@ -1083,117 +819,6 @@ for (RowData row :
                         <td class="amount-cell">
 
                             <%= value %>
-
-                        </td>
-
-
-                    <%
-
-                        }
-
-                    }
-
-                    %>
-
-
-
-                    <td class="spacer-cell">
-                    </td>
-
-
-
-                    <!-- =========================================
-                         QUOTA FCDE LIBERATA
-                         ========================================= -->
-
-                    <%
-
-                    if (row.getReleasedFcdeValues() != null) {
-
-                        for (String value :
-                                row.getReleasedFcdeValues()) {
-
-                    %>
-
-
-                        <td class="amount-cell">
-
-                            <%= value %>
-
-                        </td>
-
-
-                    <%
-
-                        }
-
-                    }
-
-                    %>
-
-
-                </tr>
-
-
-                <% } %>
-
-
-
-                <!-- =================================================
-                     TOTALI
-
-                     Sono calcolati SOLO dalle righe coerenti.
-                     ================================================= -->
-
-                <tr class="totals-row">
-
-
-                    <th class="total-label"
-                        scope="row">
-
-                        TOTALI
-
-                    </th>
-
-
-
-                    <td class="total-number text-end">
-
-                        <%= formatoItaliano3Decimali.format(
-                                totaleFcde
-                            ) %>
-
-                    </td>
-
-
-
-                    <td class="total-number">
-                    </td>
-
-
-
-                    <td class="spacer-cell">
-                    </td>
-
-
-
-                    <!-- =========================================
-                         TOTALI SANZIONI + INTERESSI
-                         ========================================= -->
-
-                    <%
-
-                    for (BigDecimal totale :
-                            totaliTaglio) {
-
-                    %>
-
-
-                        <td class="total-number text-end">
-
-                            <%= formatoItaliano3Decimali.format(
-                                    totale
-                                ) %>
 
                         </td>
 
@@ -1207,23 +832,98 @@ for (RowData row :
 
 
 
-                    <!-- =========================================
-                         TOTALI QUOTA LIBERATA
-                         ========================================= -->
+                    <%
+
+                    for (String value :
+                            row.getReleasedFcdeValues()) {
+
+                    %>
+
+
+                        <td class="amount-cell">
+
+                            <%= value %>
+
+                        </td>
+
+
+                    <% } %>
+
+
+                </tr>
+
+
+                <% } %>
+
+
+
+                <!-- =================================================
+                     TOTALI DIRETTAMENTE DAL SERVICE
+
+                     Nessun ricalcolo nel JSP.
+                     ================================================= -->
+
+                <tr class="totals-row">
+
+
+                    <th class="total-label">
+
+                        TOTALI
+
+                    </th>
+
+
+                    <td class="total-number text-end">
+
+                        <%= totals.getFcde() %>
+
+                    </td>
+
+
+                    <td class="total-number">
+                    </td>
+
+
+                    <td class="spacer-cell">
+                    </td>
+
+
 
                     <%
 
-                    for (BigDecimal totale :
-                            totaliLiberati) {
+                    for (String value :
+                            totals.getSanctionAndInterestValues()) {
 
                     %>
 
 
                         <td class="total-number text-end">
 
-                            <%= formatoItaliano3Decimali.format(
-                                    totale
-                                ) %>
+                            <%= value %>
+
+                        </td>
+
+
+                    <% } %>
+
+
+
+                    <td class="spacer-cell">
+                    </td>
+
+
+
+                    <%
+
+                    for (String value :
+                            totals.getReleasedFcdeValues()) {
+
+                    %>
+
+
+                        <td class="total-number text-end">
+
+                            <%= value %>
 
                         </td>
 
@@ -1251,7 +951,7 @@ for (RowData row :
 
 
 <!-- ============================================================
-     VALORI NON COERENTI
+     NON COERENTI
      ============================================================ -->
 
 <% if (hasIncoherentRows) { %>
@@ -1264,147 +964,32 @@ for (RowData row :
     <div class="card border-danger">
 
 
-        <!-- ====================================================
-             HEADER
-             ==================================================== -->
-
-        <div class="card-header border-danger">
-
-
-            <div class="d-flex
-                        align-items-center
-                        justify-content-between">
+        <div class="card-header
+                    border-danger
+                    fw-bold
+                    text-danger">
 
 
-                <div class="fw-bold text-danger">
+            <i class="bi bi-exclamation-octagon-fill me-2">
+            </i>
 
 
-                    <i class="bi bi-exclamation-octagon-fill me-2">
-                    </i>
-
-
-                    VALORI NON COERENTI
-
-
-                </div>
-
-
-                <span class="badge bg-danger">
-
-                    <%= righeNonCoerenti.size() %>
-
-                </span>
-
-
-            </div>
+            VALORI NON COERENTI
 
 
         </div>
 
 
-
-        <!-- ====================================================
-             BODY
-             ==================================================== -->
-
         <div class="card-body">
 
-
-            <div class="alert alert-warning">
-
-
-                <div class="d-flex align-items-start">
-
-
-                    <i class="bi bi-info-circle-fill
-                              fs-4
-                              me-3">
-                    </i>
-
-
-                    <div>
-
-
-                        <strong>
-
-                            Sono presenti valori relativi
-                            a vecchie tipologie.
-
-                        </strong>
-
-
-                        <br />
-
-
-                        Le righe seguenti fanno riferimento
-                        a tipologie non più presenti nella
-                        configurazione
-
-                        <strong>
-                            Def. tipologie
-                        </strong>
-
-                        per l'anno
-
-                        <strong>
-                            <%= selectedYear %>
-                        </strong>.
-
-
-                        <br /><br />
-
-
-                        Le righe legacy completamente a zero
-                        vengono ignorate automaticamente.
-
-
-                        <br />
-
-
-                        I valori sotto riportati invece
-
-                        <strong>
-                            contengono dati effettivi
-                        </strong>
-
-                        e non vengono utilizzati
-                        nei calcoli correnti.
-
-
-                        <br /><br />
-
-
-                        <strong>
-
-                            Chiedere a un amministratore
-                            di verificare ed eventualmente
-                            rimuovere i vecchi dati.
-
-                        </strong>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- =================================================
-                 TABELLA DATI NON COERENTI
-                 ================================================= -->
 
             <div class="table-responsive">
 
 
                 <table class="table
                               table-bordered
-                              table-hover
-                              table-sm"
-                       style="max-width:1300px">
+                              table-sm
+                              table-hover">
 
 
                     <thead class="table-danger">
@@ -1414,30 +999,22 @@ for (RowData row :
 
 
                             <th>
-                                TIPOLOGIA OBSOLETA
+
+                                TIPOLOGIA
+
                             </th>
 
 
                             <th>
-                                QUOTA FCDE
+
+                                FCDE
+
                             </th>
 
 
                             <th>
+
                                 % FCDE
-                            </th>
-
-
-                            <th colspan="3">
-
-                                SANZIONI + INTERESSI
-
-                            </th>
-
-
-                            <th colspan="3">
-
-                                QUOTA FCDE LIBERATA
 
                             </th>
 
@@ -1446,7 +1023,6 @@ for (RowData row :
 
 
                     </thead>
-
 
 
                     <tbody>
@@ -1463,110 +1039,25 @@ for (RowData row :
                         <tr>
 
 
-                            <!-- =====================================
-                                 TIPOLOGIA
-                                 ===================================== -->
-
                             <td class="text-danger fw-bold">
 
-
-                                <i class="bi bi-x-circle-fill me-1">
-                                </i>
-
-
-                                <%= row.getEntry() != null &&
-                                    !row.getEntry().trim().isEmpty()
-                                        ? row.getEntry()
-                                        : "(tipologia vuota)" %>
-
+                                <%= row.getEntry() %>
 
                             </td>
 
 
-
-                            <!-- =====================================
-                                 FCDE
-                                 ===================================== -->
-
-                            <td class="text-number">
+                            <td>
 
                                 <%= row.getFcde() %>
 
                             </td>
 
 
-
-                            <!-- =====================================
-                                 % FCDE
-                                 ===================================== -->
-
-                            <td class="text-number">
+                            <td>
 
                                 <%= row.getFcdePercentage() %>
 
                             </td>
-
-
-
-                            <!-- =====================================
-                                 SANZIONI + INTERESSI
-                                 ===================================== -->
-
-                            <%
-
-                            if (row.getSanctionAndInterestValues() != null) {
-
-                                for (String value :
-                                        row.getSanctionAndInterestValues()) {
-
-                            %>
-
-
-                                <td class="text-number">
-
-                                    <%= value %>
-
-                                </td>
-
-
-                            <%
-
-                                }
-
-                            }
-
-                            %>
-
-
-
-                            <!-- =====================================
-                                 QUOTA FCDE LIBERATA
-                                 ===================================== -->
-
-                            <%
-
-                            if (row.getReleasedFcdeValues() != null) {
-
-                                for (String value :
-                                        row.getReleasedFcdeValues()) {
-
-                            %>
-
-
-                                <td class="text-number">
-
-                                    <%= value %>
-
-                                </td>
-
-
-                            <%
-
-                                }
-
-                            }
-
-                            %>
 
 
                         </tr>
@@ -1584,31 +1075,16 @@ for (RowData row :
             </div>
 
 
-
-            <!-- =================================================
-                 WARNING ADMIN
-                 ================================================= -->
-
             <div class="alert alert-danger mb-0">
-
-
-                <i class="bi bi-shield-exclamation me-2"></i>
 
 
                 <strong>
 
-                    Intervento amministrativo richiesto:
+                    Chiedere a un amministratore
+                    di verificare ed eventualmente
+                    rimuovere i vecchi dati.
 
                 </strong>
-
-
-                i valori sopra elencati appartengono
-                a tipologie non più definite e contengono
-                valori effettivi.
-
-                Chiedere a un amministratore
-                di verificarli ed eventualmente
-                rimuoverli.
 
 
             </div>
@@ -1626,10 +1102,6 @@ for (RowData row :
 <% } %>
 
 
-
-<!-- ============================================================
-     SCROLL AUTOMATICO
-     ============================================================ -->
 
 <style>
 
@@ -1656,6 +1128,7 @@ document.addEventListener(
 
 
         if (!section) {
+
             return;
         }
 

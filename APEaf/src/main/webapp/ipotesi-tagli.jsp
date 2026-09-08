@@ -835,7 +835,7 @@ DecimalFormat formatoItaliano3Decimali =
                         group
                             .getTotalResidualInterestBD()
                             .doubleValue();
-
+                     
 
                     double taglioSanzioni1 =
                         sanzioniResidue *
