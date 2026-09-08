@@ -3,12 +3,15 @@ package is.five.apeaf.service;
 import is.five.apeaf.dao.InsDatiFCDEDAO;
 import is.five.apeaf.dao.InsResiduiAttiviDAO;
 import is.five.apeaf.dao.TabParDAO;
+import is.five.apeaf.dao.TipologieDAO;
 import is.five.apeaf.dao.model.InsDatiFCDE;
 import is.five.apeaf.dao.model.InsResiduiAttivi;
 import is.five.apeaf.dao.model.TabPar;
+import is.five.apeaf.dao.model.Tipologia;
 import is.five.apeaf.dao.model.UserView;
 import is.five.apeaf.service.ImportiDefinibiliService.GroupData;
 import is.five.apeaf.utils.CSVUtils;
+import is.five.apeaf.utils.Utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +22,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Prepares all data displayed by quota-fcde-liberata.jsp.
@@ -51,169 +58,648 @@ public class QuotaFcdeLiberataService {
     }
 
     public ViewData load(UserView user, String selectedYearId) {
+
+        /* =========================================================
+           IMPORTI DEFINIBILI
+           ========================================================= */
+
         ImportiDefinibiliService.PageData importiData =
-                importiService.load(user, selectedYearId);
+                importiService.load(
+                        user,
+                        selectedYearId
+                );
+
 
         if (!importiData.hasSelectedYear()) {
+
             return ViewData.withoutSelectedYear();
         }
 
-        String selectedYear = importiData.getSelectedYear();
-        int year = Integer.parseInt(selectedYear);
 
-        InsDatiFCDE fcdeData = InsDatiFCDEDAO.findByUserAndAnno(
-                user.getId(), year);
-        InsResiduiAttivi residualData = InsResiduiAttiviDAO.findByUserAndAnno(
-                user.getId(), year);
+        String selectedYear =
+                importiData.getSelectedYear();
 
-        String fcdeCsv = fcdeData == null || fcdeData.getValue() == null
-                ? ""
-                : fcdeData.getValue();
-        String residualCsv = residualData == null || residualData.getValue() == null
-                ? ""
-                : residualData.getValue();
 
-        List<TabPar> sanctionParameters = loadParameters(
-                user.getId(), TabPar.TYPE_SANZIONE);
-        List<TabPar> interestParameters = loadParameters(
-                user.getId(), TabPar.TYPE_INTERESSI);
+        int year =
+                Integer.parseInt(
+                        selectedYear
+                );
 
-        DecimalFormat italianThreeDecimals = new DecimalFormat(
-                "#,##0.000",
-                DecimalFormatSymbols.getInstance(Locale.ITALY));
-        italianThreeDecimals.setRoundingMode(RoundingMode.HALF_UP);
 
-        double[][] sanctionCuts =
-                new double[NUMBER_OF_ENTRIES][NUMBER_OF_HYPOTHESES];
-        double[][] interestCuts =
-                new double[NUMBER_OF_ENTRIES][NUMBER_OF_HYPOTHESES];
+        /* =========================================================
+           TIPOLOGIE DEFINITE
 
-        int groupIndex = 0;
-        for (GroupData group : importiData.getGroups()) {
-            if (groupIndex >= NUMBER_OF_ENTRIES) {
-                break;
+           Queste sono le UNICHE categorie che devono essere
+           considerate nei calcoli.
+           ========================================================= */
+
+        List<Tipologia> tipologie =
+                TipologieDAO.findByUserAndAnno(
+                        user.getId(),
+                        year
+                );
+
+
+        List<String> entryLabels =
+                new ArrayList<String>();
+
+
+        Set<String> tipologieValide =
+                new TreeSet<String>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
+
+        if (tipologie != null) {
+
+            for (Tipologia tipologia : tipologie) {
+
+                if (tipologia == null ||
+                    tipologia.getValue() == null) {
+
+                    continue;
+                }
+
+
+                String nome =
+                        tipologia
+                            .getValue()
+                            .trim();
+
+
+                if (nome.isEmpty()) {
+
+                    continue;
+                }
+
+
+                if (tipologieValide.add(nome)) {
+
+                    entryLabels.add(nome);
+                }
             }
-
-            for (int hypothesis = 0;
-                    hypothesis < NUMBER_OF_HYPOTHESES;
-                    hypothesis++) {
-                sanctionCuts[groupIndex][hypothesis] =
-                        group.getTotalResidualSanctionsBD().doubleValue()
-                        * parameterValue(
-                            sanctionParameters,
-                            hypothesis
-                        ).doubleValue()
-                        / 100;
-
-                interestCuts[groupIndex][hypothesis] =
-                        group.getTotalResidualInterestBD().doubleValue()
-                        * parameterValue(
-                            interestParameters,
-                            hypothesis
-                        ).doubleValue()
-                        / 100;
-            }
-
-            groupIndex++;
         }
+
+
+        /*
+         * Il DAO le restituisce già ordinate per value ASC,
+         * quindi entryLabels conserva l'ordine configurato.
+         */
+
+
+        /* =========================================================
+           FCDE / RESIDUI
+           ========================================================= */
+
+        InsDatiFCDE fcdeData =
+                InsDatiFCDEDAO.findByUserAndAnno(
+                        user.getId(),
+                        year
+                );
+
+
+        InsResiduiAttivi residualData =
+                InsResiduiAttiviDAO.findByUserAndAnno(
+                        user.getId(),
+                        year
+                );
+
+
+        String fcdeCsv =
+                fcdeData == null ||
+                fcdeData.getValue() == null
+                        ? ""
+                        : fcdeData
+                            .getValue()
+                            .trim();
+
+
+        String residualCsv =
+                residualData == null ||
+                residualData.getValue() == null
+                        ? ""
+                        : residualData
+                            .getValue()
+                            .trim();
+
+
+        /* =========================================================
+           PARSING PER NOME TIPOLOGIA
+
+           Niente più accesso tramite indice.
+           ========================================================= */
+
+        Map<String, BigDecimal> fcdePerTipologia =
+                parseFcdeValues(
+                        fcdeCsv,
+                        tipologieValide
+                );
+
+
+        Map<String, BigDecimal> residuiPerTipologia =
+                parseResidualValues(
+                        residualCsv,
+                        tipologieValide
+                );
+
+
+        /* =========================================================
+           PARAMETRI SANZIONI / INTERESSI
+           ========================================================= */
+
+        List<TabPar> sanctionParameters =
+                loadParameters(
+                        user.getId(),
+                        TabPar.TYPE_SANZIONE
+                );
+
+
+        List<TabPar> interestParameters =
+                loadParameters(
+                        user.getId(),
+                        TabPar.TYPE_INTERESSI
+                );
+
+
+        /* =========================================================
+           FORMATO
+           ========================================================= */
+
+        DecimalFormat italianThreeDecimals =
+                new DecimalFormat(
+                        "#,##0.000",
+                        DecimalFormatSymbols.getInstance(
+                                Locale.ITALY
+                        )
+                );
+
+
+        italianThreeDecimals.setRoundingMode(
+                RoundingMode.HALF_UP
+        );
+
+
+        /* =========================================================
+           GRUPPI IMPORTI DEFINIBILI PER TIPOLOGIA
+
+           Anche qui niente più groupIndex.
+           ========================================================= */
+
+        Map<String, GroupData> groupsByEntry =
+                new TreeMap<String, GroupData>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
+
+        if (importiData.getGroups() != null) {
+
+            for (GroupData group :
+                    importiData.getGroups()) {
+
+
+                if (group == null ||
+                    group.getEntry() == null) {
+
+                    continue;
+                }
+
+
+                String nome =
+                        group
+                            .getEntry()
+                            .trim();
+
+
+                if (nome.isEmpty()) {
+
+                    continue;
+                }
+
+
+                /*
+                 * Consideriamo solo categorie ancora definite.
+                 */
+                if (!tipologieValide.contains(nome)) {
+
+                    continue;
+                }
+
+
+                groupsByEntry.put(
+                        nome,
+                        group
+                );
+            }
+        }
+
+
+        /* =========================================================
+           OUTPUT
+           ========================================================= */
 
         List<RowData> calculatedRows =
                 new ArrayList<RowData>();
 
-        double totalFcde = 0;
-        double totalResidual = 0;
 
-        double[] totalSanctionAndInterest =
-                new double[NUMBER_OF_HYPOTHESES];
+        BigDecimal totalFcde =
+                BigDecimal.ZERO;
 
-        double[] totalReleasedFcde =
-                new double[NUMBER_OF_HYPOTHESES];
 
-        for (int entryIndex = 0;
-                entryIndex < NUMBER_OF_ENTRIES;
-                entryIndex++) {
-            double fcde = CSVUtils.getDecimalValue(
-                    fcdeCsv, entryIndex).doubleValue();
-            double residual = CSVUtils.getDecimalValue(
-                    residualCsv, entryIndex).doubleValue();
+        BigDecimal totalResidual =
+                BigDecimal.ZERO;
 
-            // This intentionally preserves the original calculation.
-            double fcdePercentage = 100 * fcde / residual;
 
-            totalFcde += fcde;
-            totalResidual += residual;
+        BigDecimal[] totalSanctionAndInterest =
+                new BigDecimal[NUMBER_OF_HYPOTHESES];
+
+
+        BigDecimal[] totalReleasedFcde =
+                new BigDecimal[NUMBER_OF_HYPOTHESES];
+
+
+        for (int hypothesis = 0;
+             hypothesis < NUMBER_OF_HYPOTHESES;
+             hypothesis++) {
+
+
+            totalSanctionAndInterest[hypothesis] =
+                    BigDecimal.ZERO;
+
+
+            totalReleasedFcde[hypothesis] =
+                    BigDecimal.ZERO;
+        }
+
+
+        /* =========================================================
+           CALCOLO PER OGNI TIPOLOGIA DEFINITA
+           ========================================================= */
+
+        for (String entryLabel :
+                entryLabels) {
+
+
+            /* -----------------------------------------------------
+               FCDE
+               ----------------------------------------------------- */
+
+            BigDecimal fcde =
+                    fcdePerTipologia.get(
+                            entryLabel
+                    );
+
+
+            if (fcde == null) {
+
+                fcde =
+                        BigDecimal.ZERO;
+            }
+
+
+            /* -----------------------------------------------------
+               RESIDUO ATTIVO
+               ----------------------------------------------------- */
+
+            BigDecimal residual =
+                    residuiPerTipologia.get(
+                            entryLabel
+                    );
+
+
+            if (residual == null) {
+
+                residual =
+                        BigDecimal.ZERO;
+            }
+
+
+            /* -----------------------------------------------------
+               GRUPPO RUOLI / IMPORTI DEFINIBILI
+               ----------------------------------------------------- */
+
+            GroupData group =
+                    groupsByEntry.get(
+                            entryLabel
+                    );
+
+
+            BigDecimal residualSanctions =
+                    BigDecimal.ZERO;
+
+
+            BigDecimal residualInterest =
+                    BigDecimal.ZERO;
+
+
+            if (group != null) {
+
+
+                if (group.getTotalResidualSanctionsBD() != null) {
+
+                    residualSanctions =
+                            group.getTotalResidualSanctionsBD();
+                }
+
+
+                if (group.getTotalResidualInterestBD() != null) {
+
+                    residualInterest =
+                            group.getTotalResidualInterestBD();
+                }
+            }
+
+
+            /* -----------------------------------------------------
+               % FCDE
+
+               IMPORTANTISSIMO:
+               evitiamo divisione per zero / Infinity / NaN.
+               ----------------------------------------------------- */
+
+            BigDecimal fcdePercentage =
+                    BigDecimal.ZERO;
+
+
+            if (residual.compareTo(
+                    BigDecimal.ZERO) != 0) {
+
+
+                fcdePercentage =
+                        fcde
+                            .multiply(
+                                BigDecimal.valueOf(100)
+                            )
+                            .divide(
+                                residual,
+                                10,
+                                RoundingMode.HALF_UP
+                            );
+            }
+
+
+            /* -----------------------------------------------------
+               TOTALI BASE
+               ----------------------------------------------------- */
+
+            totalFcde =
+                    totalFcde.add(
+                            fcde
+                    );
+
+
+            totalResidual =
+                    totalResidual.add(
+                            residual
+                    );
+
 
             List<String> sanctionAndInterestValues =
                     new ArrayList<String>();
 
+
             List<String> releasedFcdeValues =
                     new ArrayList<String>();
 
+
+            /* =====================================================
+               IPOTESI TAGLI
+               ===================================================== */
+
             for (int hypothesis = 0;
-                    hypothesis < NUMBER_OF_HYPOTHESES;
-                    hypothesis++) {
-                double calculatedValue =
+                 hypothesis < NUMBER_OF_HYPOTHESES;
+                 hypothesis++) {
+
+
+                /* -------------------------------------------------
+                   % SANZIONE
+                   ------------------------------------------------- */
+
+                BigDecimal sanctionPercentage =
+                        parameterValue(
+                                sanctionParameters,
+                                hypothesis
+                        );
+
+
+                if (sanctionPercentage == null) {
+
+                    sanctionPercentage =
+                            BigDecimal.ZERO;
+                }
+
+
+                /* -------------------------------------------------
+                   % INTERESSI
+                   ------------------------------------------------- */
+
+                BigDecimal interestPercentage =
+                        parameterValue(
+                                interestParameters,
+                                hypothesis
+                        );
+
+
+                if (interestPercentage == null) {
+
+                    interestPercentage =
+                            BigDecimal.ZERO;
+                }
+
+
+                /* -------------------------------------------------
+                   TAGLIO SANZIONI
+                   ------------------------------------------------- */
+
+                BigDecimal sanctionCut =
+                        residualSanctions
+                            .multiply(
+                                sanctionPercentage
+                            )
+                            .divide(
+                                BigDecimal.valueOf(100),
+                                10,
+                                RoundingMode.HALF_UP
+                            );
+
+
+                /* -------------------------------------------------
+                   TAGLIO INTERESSI
+                   ------------------------------------------------- */
+
+                BigDecimal interestCut =
+                        residualInterest
+                            .multiply(
+                                interestPercentage
+                            )
+                            .divide(
+                                BigDecimal.valueOf(100),
+                                10,
+                                RoundingMode.HALF_UP
+                            );
+
+
+                /* -------------------------------------------------
+                   RESIDUO DOPO TAGLI
+                   ------------------------------------------------- */
+
+                BigDecimal residualAfterCuts =
+                        residual
+                            .subtract(
+                                sanctionCut
+                            )
+                            .subtract(
+                                interestCut
+                            );
+
+
+                /* -------------------------------------------------
+                   VALORE FCDE DOPO SANZIONI + INTERESSI
+
+                   Formula originale:
+
+                   fcdePercentage
+                   * (residual - sanctionCut - interestCut)
+                   / 100
+                   ------------------------------------------------- */
+
+                BigDecimal calculatedValue =
                         fcdePercentage
-                        * (residual
-                            - sanctionCuts[entryIndex][hypothesis]
-                            - interestCuts[entryIndex][hypothesis])
-                        / 100;
+                            .multiply(
+                                residualAfterCuts
+                            )
+                            .divide(
+                                BigDecimal.valueOf(100),
+                                10,
+                                RoundingMode.HALF_UP
+                            );
+
 
                 sanctionAndInterestValues.add(
-                        italianThreeDecimals.format(calculatedValue));
+                        italianThreeDecimals.format(
+                                calculatedValue
+                        )
+                );
 
-                totalSanctionAndInterest[hypothesis] +=
-                        calculatedValue;
 
-                /*
-                 * Quota FCDE liberata:
-                 *
-                 * quota FCDE accantonata a consuntivo
-                 * - valore calcolato per sanzioni e interessi.
-                 */
-                double releasedFcde =
-                        fcde - calculatedValue;
+                totalSanctionAndInterest[hypothesis] =
+                        totalSanctionAndInterest[hypothesis]
+                            .add(
+                                calculatedValue
+                            );
+
+
+                /* -------------------------------------------------
+                   QUOTA FCDE LIBERATA
+
+                   FCDE accantonato - FCDE ricalcolato
+                   ------------------------------------------------- */
+
+                BigDecimal releasedFcde =
+                        fcde.subtract(
+                                calculatedValue
+                        );
+
 
                 releasedFcdeValues.add(
-                        italianThreeDecimals.format(releasedFcde));
+                        italianThreeDecimals.format(
+                                releasedFcde
+                        )
+                );
 
-                totalReleasedFcde[hypothesis] +=
-                        releasedFcde;
+
+                totalReleasedFcde[hypothesis] =
+                        totalReleasedFcde[hypothesis]
+                            .add(
+                                releasedFcde
+                            );
             }
 
-            calculatedRows.add(new RowData(
-                    ENTRY_LABELS[entryIndex],
-                    italianThreeDecimals.format(fcde),
-                    italianThreeDecimals.format(fcdePercentage),
-                    sanctionAndInterestValues,
-                    releasedFcdeValues));
+
+            /* =====================================================
+               RIGA
+               ===================================================== */
+
+            calculatedRows.add(
+                    new RowData(
+                            entryLabel,
+                            italianThreeDecimals.format(
+                                    fcde
+                            ),
+                            italianThreeDecimals.format(
+                                    fcdePercentage
+                            ),
+                            sanctionAndInterestValues,
+                            releasedFcdeValues
+                    )
+            );
         }
 
-        double totalFcdePercentage =
-                totalResidual != 0
-                        ? 100 * totalFcde / totalResidual
-                        : 0;
 
-        TotalsData totals = new TotalsData(
-                italianThreeDecimals.format(totalFcde),
-                italianThreeDecimals.format(totalFcdePercentage),
-                formatValues(
-                        totalSanctionAndInterest,
-                        italianThreeDecimals),
-                formatValues(
-                        totalReleasedFcde,
-                        italianThreeDecimals));
+        /* =========================================================
+           % FCDE TOTALE
+           ========================================================= */
+
+        BigDecimal totalFcdePercentage =
+                BigDecimal.ZERO;
+
+
+        if (totalResidual.compareTo(
+                BigDecimal.ZERO) != 0) {
+
+
+            totalFcdePercentage =
+                    totalFcde
+                        .multiply(
+                            BigDecimal.valueOf(100)
+                        )
+                        .divide(
+                            totalResidual,
+                            10,
+                            RoundingMode.HALF_UP
+                        );
+        }
+
+
+        /* =========================================================
+           TOTALI
+           ========================================================= */
+
+        TotalsData totals =
+                new TotalsData(
+                        italianThreeDecimals.format(
+                                totalFcde
+                        ),
+                        italianThreeDecimals.format(
+                                totalFcdePercentage
+                        ),
+                        formatValues(
+                                totalSanctionAndInterest,
+                                italianThreeDecimals
+                        ),
+                        formatValues(
+                                totalReleasedFcde,
+                                italianThreeDecimals
+                        )
+                );
+
+
+        /* =========================================================
+           VIEW DATA
+           ========================================================= */
 
         return new ViewData(
                 selectedYear,
                 formatParameterValues(
                         sanctionParameters,
-                        italianThreeDecimals),
+                        italianThreeDecimals
+                ),
                 formatParameterValues(
                         interestParameters,
-                        italianThreeDecimals),
+                        italianThreeDecimals
+                ),
                 calculatedRows,
-                totals);
+                totals
+        );
     }
 
     private List<TabPar> loadParameters(int userId, int type) {
@@ -279,15 +765,33 @@ public class QuotaFcdeLiberataService {
     }
 
     private List<String> formatValues(
-            double[] source,
-            DecimalFormat formatter) {
-        List<String> values = new ArrayList<String>();
+            BigDecimal[] values,
+            DecimalFormat format) {
 
-        for (double value : source) {
-            values.add(formatter.format(value));
+
+        List<String> result =
+                new ArrayList<String>();
+
+
+        if (values == null) {
+
+            return result;
         }
 
-        return values;
+
+        for (BigDecimal value : values) {
+
+            result.add(
+                    format.format(
+                            value != null
+                                    ? value
+                                    : BigDecimal.ZERO
+                    )
+            );
+        }
+
+
+        return result;
     }
 
     public static final class ViewData {
@@ -404,6 +908,387 @@ public class QuotaFcdeLiberataService {
         }
         public List<String> getReleasedFcdeValues() {
             return releasedFcdeValues;
+        }
+    }
+    
+    private Map<String, BigDecimal> parseResidualValues(
+            String csv,
+            Set<String> tipologieValide) {
+
+
+        Map<String, BigDecimal> result =
+                new TreeMap<String, BigDecimal>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
+
+        if (csv == null ||
+            csv.trim().isEmpty()) {
+
+            return result;
+        }
+
+
+        String[] tokens =
+                csv.split(";", -1);
+
+
+        boolean nuovoFormato =
+                false;
+
+
+        for (String token : tokens) {
+
+            if (token != null &&
+                token.contains("=")) {
+
+                nuovoFormato =
+                        true;
+
+                break;
+            }
+        }
+
+
+        /* =========================================================
+           NUOVO FORMATO
+           ========================================================= */
+
+        if (nuovoFormato) {
+
+
+            for (String token : tokens) {
+
+
+                if (token == null) {
+                    continue;
+                }
+
+
+                token =
+                        token.trim();
+
+
+                if (token.isEmpty() ||
+                    !token.contains("=")) {
+
+                    continue;
+                }
+
+
+                String[] parts =
+                        token.split(
+                                "=",
+                                2
+                        );
+
+
+                String nome =
+                        parts[0] != null
+                                ? parts[0].trim()
+                                : "";
+
+
+                if (nome.isEmpty()) {
+                    continue;
+                }
+
+
+                /*
+                 * Ignoriamo completamente tipologie
+                 * non più configurate.
+                 */
+                if (!tipologieValide.contains(nome)) {
+                    continue;
+                }
+
+
+                String valoreString =
+                        parts.length > 1 &&
+                        parts[1] != null
+                                ? parts[1].trim()
+                                : "0";
+
+
+                BigDecimal valore =
+                        parseNumber(
+                                valoreString
+                        );
+
+
+                result.put(
+                        nome,
+                        valore
+                );
+            }
+
+
+            return result;
+        }
+
+
+        /* =========================================================
+           VECCHIO FORMATO POSIZIONALE
+
+           Utilizzato SOLO quando non esiste alcun "=".
+           ========================================================= */
+
+        int position =
+                0;
+
+
+        for (String token : tokens) {
+
+
+            if (position >=
+                InsResiduiAttivi.TIPOLOGIE.length) {
+
+                break;
+            }
+
+
+            String nome =
+                    InsResiduiAttivi
+                        .TIPOLOGIE[position];
+
+
+            position++;
+
+
+            if (nome == null ||
+                nome.trim().isEmpty()) {
+
+                continue;
+            }
+
+
+            nome =
+                    nome.trim();
+
+
+            /*
+             * Legacy category non più configurata:
+             * viene ignorata.
+             */
+            if (!tipologieValide.contains(nome)) {
+
+                continue;
+            }
+
+
+            BigDecimal valore =
+                    parseNumber(
+                            token
+                    );
+
+
+            result.put(
+                    nome,
+                    valore
+            );
+        }
+
+
+        return result;
+    }
+    
+    private Map<String, BigDecimal> parseFcdeValues(
+            String csv,
+            Set<String> tipologieValide) {
+
+
+        Map<String, BigDecimal> result =
+                new TreeMap<String, BigDecimal>(
+                        String.CASE_INSENSITIVE_ORDER
+                );
+
+
+        if (csv == null ||
+            csv.trim().isEmpty()) {
+
+            return result;
+        }
+
+
+        String[] tokens =
+                csv.split(";", -1);
+
+
+        boolean nuovoFormato =
+                false;
+
+
+        for (String token : tokens) {
+
+            if (token != null &&
+                token.contains("=")) {
+
+                nuovoFormato =
+                        true;
+
+                break;
+            }
+        }
+
+
+        /* =========================================================
+           NUOVO FORMATO
+           ========================================================= */
+
+        if (nuovoFormato) {
+
+
+            for (String token : tokens) {
+
+
+                if (token == null) {
+                    continue;
+                }
+
+
+                token =
+                        token.trim();
+
+
+                if (token.isEmpty() ||
+                    !token.contains("=")) {
+
+                    continue;
+                }
+
+
+                String[] parts =
+                        token.split(
+                                "=",
+                                2
+                        );
+
+
+                String nome =
+                        parts[0] != null
+                                ? parts[0].trim()
+                                : "";
+
+
+                if (nome.isEmpty()) {
+                    continue;
+                }
+
+
+                if (!tipologieValide.contains(nome)) {
+
+                    continue;
+                }
+
+
+                String valoreString =
+                        parts.length > 1 &&
+                        parts[1] != null
+                                ? parts[1].trim()
+                                : "0";
+
+
+                BigDecimal valore =
+                        parseNumber(
+                                valoreString
+                        );
+
+
+                result.put(
+                        nome,
+                        valore
+                );
+            }
+
+
+            return result;
+        }
+
+
+        /* =========================================================
+           LEGACY
+           ========================================================= */
+
+        int position =
+                0;
+
+
+        for (String token : tokens) {
+
+
+            if (position >=
+                InsDatiFCDE.TIPOLOGIE.length) {
+
+                break;
+            }
+
+
+            String nome =
+                    InsDatiFCDE
+                        .TIPOLOGIE[position];
+
+
+            position++;
+
+
+            if (nome == null ||
+                nome.trim().isEmpty()) {
+
+                continue;
+            }
+
+
+            nome =
+                    nome.trim();
+
+
+            if (!tipologieValide.contains(nome)) {
+
+                continue;
+            }
+
+
+            BigDecimal valore =
+                    parseNumber(
+                            token
+                    );
+
+
+            result.put(
+                    nome,
+                    valore
+            );
+        }
+
+
+        return result;
+    }
+    
+    private BigDecimal parseNumber(String value) {
+
+        if (value == null ||
+            value.trim().isEmpty()) {
+
+            return BigDecimal.ZERO;
+        }
+
+
+        try {
+
+            BigDecimal parsed =
+                    Utils.parseItalianNumber(
+                            value.trim()
+                    );
+
+
+            return parsed != null
+                    ? parsed
+                    : BigDecimal.ZERO;
+
+
+        } catch (Exception exc) {
+
+            return BigDecimal.ZERO;
         }
     }
 }
