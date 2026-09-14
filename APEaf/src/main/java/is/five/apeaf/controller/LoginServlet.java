@@ -60,6 +60,8 @@ public class LoginServlet extends HttpServlet {
 		request.getSession().setAttribute(SessionVariables.PAGE, null);
 		request.getSession().setAttribute(SessionVariables.SERVIZIO, null);
 		request.getSession().setAttribute(SessionVariables.ID_ESISTENTE, null);
+		request.getSession().removeAttribute("anno_selezionato");
+
 		
 		String ip = request.getRemoteAddr();
 		if (ip.equalsIgnoreCase("0:0:0:0:0:0:0:1")) {

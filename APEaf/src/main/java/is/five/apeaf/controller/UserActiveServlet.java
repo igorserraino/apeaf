@@ -42,6 +42,8 @@ public class UserActiveServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		request.getSession().setAttribute(SessionVariables.USER_SEL, null);
+		request.getSession().removeAttribute("anno_selezionato");
+
 
 		
 		UserView user = (UserView) request.getSession().getAttribute("ubAP");
