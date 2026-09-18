@@ -1867,3 +1867,1483 @@ input {
 #nonCoherentValues {
     scroll-margin-top: 100px;
 }
+
+
+/***** RELAZIONE ********/
+
+    .def-agev-page {
+        width: 96%;
+        margin: 20px auto 50px auto;
+        font-size: 13px;
+    }
+
+    .def-agev-page h3 {
+        color: #3e2676;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .def-agev-page h4 {
+        color: #3e2676;
+        font-weight: 700;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        border-bottom: 3px solid #ff8f00;
+        padding-bottom: 6px;
+    }
+
+    .section-title {
+        background: #3e2676;
+        color: white;
+        text-align: center;
+        font-weight: 700;
+        padding: 9px 12px;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .section-subtitle {
+        background: #eae4f8;
+        color: #3e2676;
+        border-left: 5px solid #ff8f00;
+        padding: 8px 12px;
+        font-weight: 700;
+        margin-top: 18px;
+        margin-bottom: 8px;
+    }
+
+    .intro-text {
+        line-height: 1.55;
+        margin-bottom: 8px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 18px;
+        background: white;
+    }
+
+    .data-table th,
+    .data-table td {
+        border: 1px solid #555;
+        padding: 5px 7px;
+        vertical-align: middle;
+    }
+
+    .data-table thead th {
+        background: #eae4f8;
+        color: #27213c;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .data-table .group-name {
+        font-weight: 700;
+    }
+
+    .data-table .num {
+        text-align: right;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .data-table .center {
+        text-align: center;
+    }
+
+    .data-table .money-role {
+        background: #dff5df;
+    }
+
+    .data-table .money-paid {
+        background: #dff5df;
+    }
+
+    .data-table .residual {
+        background: #d9edf7;
+        font-weight: 600;
+    }
+
+    .data-table .percentage {
+        background: #f3f3f3;
+        font-weight: 700;
+    }
+
+    .total-row td {
+        background: #dedede !important;
+        font-weight: 700;
+        border-top: 2px solid #333;
+    }
+
+    .grand-total td {
+        background: #c9e8ca !important;
+        font-weight: 700;
+        border-top: 3px solid #333;
+    }
+
+    .evaluation-box {
+        border: 1px solid #ccc;
+        background: #fafafa;
+        padding: 8px 12px;
+        margin-bottom: 5px;
+    }
+
+    .evaluation-box strong {
+        color: #3e2676;
+    }
+
+    .evaluation-bad {
+        color: #b71c1c;
+        font-weight: 700;
+    }
+
+    .evaluation-ok {
+        color: #a05a00;
+        font-weight: 700;
+    }
+
+    .evaluation-good {
+        color: #18752c;
+        font-weight: 700;
+    }
+
+    .hypothesis-head {
+        background: #fff3b0 !important;
+        font-weight: 700;
+    }
+
+    .hypothesis-50 {
+        background: #fff8cc;
+    }
+
+    .hypothesis-80 {
+        background: #ffe8a1;
+    }
+
+    .hypothesis-100 {
+        background: #ffd96a;
+    }
+
+    .fcde {
+        background: #dceaf7;
+    }
+
+    .positive {
+        background: #dff0d8 !important;
+        color: #1b5e20;
+        font-weight: 700;
+    }
+
+    .negative {
+        background: #ffd9d9 !important;
+        color: #a00000;
+        font-weight: 700;
+    }
+
+    .final-box {
+        border: 2px solid #3e2676;
+        padding: 15px 18px;
+        margin-top: 20px;
+        background: #faf8ff;
+    }
+
+    .final-box ul {
+        margin-bottom: 0;
+    }
+
+    .admin-table {
+        max-width: 850px;
+    }
+
+    @media print {
+        .def-agev-page {
+            width: 100%;
+            font-size: 9px;
+        }
+
+        .section-title {
+            break-after: avoid;
+        }
+
+        .data-table {
+            break-inside: avoid;
+        }
+    }
+    
+    
+    .section-title-soft {
+    background: #eae4f8;
+    color: #3e2676;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 6px 10px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-left: 4px solid #ff8f00;
+    border-radius: 2px;
+    letter-spacing: 0;
+}
+    
+    
+    /* ============================================================
+   VALUTAZIONE CAPACITA' RISCOSSIONE
+   ============================================================ */
+
+.riscossione-analysis {
+    background: #eae4f8;
+    padding: 12px 12px 10px 12px;
+    margin-top: 18px;
+    margin-bottom: 20px;
+}
+
+.riscossione-title {
+    color: #3e2676;
+    font-size: 13px;
+    font-weight: 700;
+
+    border-left: 4px solid #ff8f00;
+
+    padding: 9px 12px;
+    margin-bottom: 8px;
+}
+
+.riscossione-row {
+    background: #fafafa;
+    border: 1px solid #d0d0d0;
+
+    padding: 8px 12px;
+    margin-bottom: 5px;
+
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.riscossione-entry {
+    color: #3e2676;
+    font-weight: 700;
+}
+
+.riscossione-text {
+    color: #687087;
+}
+
+.riscossione-percent {
+    color: #3e2676;
+    font-weight: 700;
+}
+
+.riscossione-bad {
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+.riscossione-medium {
+    color: #d88700;
+    font-weight: 700;
+}
+
+.riscossione-good {
+    color: #218838;
+    font-weight: 700;
+}
+
+.riscossione-row:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================================
+   IPOTESI TAGLI SANZIONI / INTERESSI
+   ============================================================ */
+
+.ipotesi-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.ipotesi-table th,
+.ipotesi-table td {
+    border: 1px solid #333 !important;
+    padding: 5px 8px;
+}
+
+.ipotesi-table thead th {
+    background: #f1f1f1;
+    color: #111;
+    font-weight: 700;
+}
+
+.ipotesi-table .ipotesi-main-title {
+    color: #0c2d68;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ipotesi-table .ipotesi-values td {
+    background: #ffff00;
+    color: #000;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   PROIEZIONE TAGLI
+   ============================================================ */
+
+.tagli-report-table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1100px;
+    color: #082c69;
+    font-size: 14px;
+}
+
+.tagli-report-table th,
+.tagli-report-table td {
+    border: 1px solid #333;
+    padding: 6px 10px;
+    vertical-align: middle;
+}
+
+.tagli-empty {
+    border: none !important;
+    background: transparent !important;
+}
+
+.tagli-sanzioni-header {
+    background: #f8dfd0;
+    color: #111;
+    text-align: center;
+    font-weight: 700;
+}
+
+.tagli-interessi-header {
+    background: #dbe8f5;
+    color: #082c69;
+    text-align: center;
+    font-weight: 700;
+}
+
+.tagli-tipologia-header {
+    background: #fff;
+    color: #082c69;
+    text-align: center;
+    font-weight: 700;
+}
+
+.tagli-description {
+    width: 170px;
+    text-align: center;
+    font-weight: 500;
+    background: #fff;
+}
+
+.tagli-tipologia {
+    width: 160px;
+    text-align: center;
+    font-weight: 500;
+    background: #fff;
+}
+
+.tagli-number {
+    min-width: 120px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.tagli-sanzioni {
+    background: #f8dfd0;
+}
+
+.tagli-interessi {
+    background: #dbe8f5;
+}
+
+.tagli-total-row td {
+    font-weight: 700;
+}
+
+.tagli-total-label {
+    text-align: center;
+    background: #fff;
+    font-weight: 700 !important;
+}
+
+/* ============================================================
+   FCDE REPORT
+   ============================================================ */
+
+.fcde-report-table {
+    border-collapse: collapse;
+    width: 650px;
+    margin: 15px 0 30px 0;
+    color: #082c69;
+    font-size: 14px;
+}
+
+.fcde-report-table th,
+.fcde-report-table td {
+    border: 1px solid #333;
+    padding: 5px 10px;
+    vertical-align: middle;
+}
+
+.fcde-report-main-title {
+    border: none !important;
+    background: transparent !important;
+    color: #111 !important;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.fcde-report-table thead tr:nth-child(2) th {
+    background: #f1f1f1;
+    color: #111;
+    text-align: center;
+    font-weight: 700;
+}
+
+.fcde-tipologia {
+    background: #f1f1f1;
+    text-align: center;
+    font-weight: 700;
+}
+
+.fcde-number {
+    text-align: right;
+    font-weight: 700;
+}
+
+.fcde-residui {
+    background: #fff3cd;
+}
+
+.fcde-percentuale {
+    background: #d9d9d9;
+}
+
+.fcde-total-row td {
+    font-weight: 700;
+}
+
+.fcde-total-row td:first-child,
+.fcde-total-row td:last-child {
+    border: none;
+    background: transparent;
+}
+
+/* ============================================================
+   QUOTA FCDE LIBERATA
+   ============================================================ */
+
+.fcde-liberata-table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1400px;
+    color: #082c69;
+    font-size: 14px;
+}
+
+.fcde-liberata-table th,
+.fcde-liberata-table td {
+    border: 1px solid #333;
+    padding: 5px 8px;
+    vertical-align: middle;
+}
+
+.fcde-liberata-table thead th {
+    background: #f1f1f1;
+    color: #111;
+    text-align: center;
+    font-weight: 700;
+}
+
+.fcde-lib-empty {
+    border: none !important;
+    background: transparent !important;
+}
+
+.fcde-liberata-table .fcde-lib-group-residuo {
+    background: #d9d9d9;
+    color: #111;
+}
+
+.fcde-liberata-table .fcde-lib-group-liberata {
+    background: #dbe8f5;
+    color: #111;
+}
+
+.fcde-lib-entry {
+    background: #dbe8f5;
+    color: #082c69;
+    font-weight: 700;
+}
+
+.fcde-lib-number {
+    text-align: right;
+    font-weight: 700;
+}
+
+.fcde-lib-base {
+    background: #fff3cd;
+}
+
+.fcde-lib-liberata {
+    background: #fff3cd;
+}
+
+.fcde-lib-total td {
+    font-weight: 700;
+}
+
+.fcde-lib-highlight {
+    background: #ffff00 !important;
+    color: #082c69;
+}
+
+/* ============================================================
+   RIFLESSI SUL BILANCIO - REPORT
+   ============================================================ */
+
+.riflessi-report-header {
+    width: 100%;
+    margin: 20px 0 20px 0;
+    display: flex;
+    justify-content: left;
+}
+
+.riflessi-report-header table {
+    border-collapse: collapse;
+    width: 410px;
+}
+
+.riflessi-report-header th,
+.riflessi-report-header td {
+    border: 1px solid #333;
+    padding: 4px 12px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.riflessi-report-header th {
+    background: #dbe8f5;
+    color: #111;
+}
+
+.riflessi-report-header td {
+    background: #fff3cd;
+    color: #111;
+}
+
+
+/* ============================================================
+   SINGOLA TIPOLOGIA
+   ============================================================ */
+
+.riflessi-report-group {
+    width: 100%;
+    margin: 0 0 45px 0;
+}
+
+.riflessi-report-table {
+    border-collapse: collapse;
+    width: 875px;
+    color: #082c69;
+    font-size: 14px;
+}
+
+.riflessi-report-table td,
+.riflessi-report-table th {
+    border: 1px solid #333;
+    padding: 4px 6px;
+    vertical-align: middle;
+}
+
+
+/* ============================================================
+   TITOLO TIPOLOGIA
+   ============================================================ */
+
+.riflessi-entry-title {
+    width: 330px;
+    background: #ffff00;
+    color: #111;
+    text-align: center;
+    font-weight: 700;
+}
+
+.riflessi-empty-cell {
+    border: none !important;
+    background: transparent !important;
+}
+
+
+/* ============================================================
+   DESCRIZIONI
+   ============================================================ */
+
+.riflessi-description {
+    width: 460px;
+    background: #f1f1f1;
+    color: #082c69;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   IMPORTI
+   ============================================================ */
+
+.riflessi-value {
+    width: 135px;
+    background: #fff3cd;
+    color: #082c69;
+    text-align: right;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   IMPATTO SUL BILANCIO
+   ============================================================ */
+
+.riflessi-impact-label {
+    background: #ffff00;
+    color: #082c69;
+    font-weight: 700;
+}
+
+.riflessi-impact-value {
+    background: #ff0000;
+    color: #ffff00;
+    text-align: right;
+    font-weight: 700;
+}
+
+/* ============================================================
+   VALUTAZIONE GENERALE - REPORT
+   ============================================================ */
+
+.valutazione-report-wrapper {
+    margin-top: 25px;
+    margin-bottom: 35px;
+}
+
+.valutazione-report-table {
+    border-collapse: collapse;
+    width: 650px;
+    color: #111;
+    font-size: 14px;
+}
+
+.valutazione-report-table th,
+.valutazione-report-table td {
+    border: 1px solid #333;
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.valutazione-report-empty {
+    border: none !important;
+    background: transparent !important;
+    width: 190px;
+}
+
+.valutazione-report-main-header {
+    background: #dbe8f5;
+    color: #082c69;
+    text-align: center;
+    font-weight: 700;
+}
+
+.valutazione-report-percent {
+    background: #f1f1f1;
+    color: #111;
+    text-align: center;
+    font-weight: 700;
+    min-width: 145px;
+}
+
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+.valutazione-report-label {
+    background: #f1f1f1;
+    color: #111;
+    text-align: left;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.valutazione-report-value {
+    background: #f7f7f7;
+    color: #111;
+    text-align: right;
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   RISULTATO
+   ============================================================ */
+
+.valutazione-report-result-label {
+    border: none !important;
+    background: transparent !important;
+}
+
+.valutazione-report-negative,
+.valutazione-report-positive {
+    position: relative;
+    text-align: right;
+    font-weight: 700;
+    padding-left: 28px !important;
+}
+
+.valutazione-report-negative {
+    background: #ff0000;
+    color: #ffff00;
+}
+
+.valutazione-report-positive {
+    background: #198754;
+    color: #fff;
+}
+
+
+/* SEGNO A SINISTRA */
+
+.valutazione-report-sign {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+}
+
+.valutazione-report-result-value {
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   CONSIDERAZIONI FINALI
+   ============================================================ */
+
+.considerazioni-finali {
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    color: #082c69;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.considerazioni-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 28px;
+}
+
+.considerazioni-punti {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.considerazioni-punti > div {
+    margin-bottom: 3px;
+}
+
+
+/* ============================================================
+   RIGHE RISCOSSIONE
+   ============================================================ */
+
+.considerazioni-riscossione {
+    width: 100%;
+    max-width: 1250px;
+    margin-top: 25px;
+}
+
+.considerazioni-riga {
+    display: grid;
+
+    grid-template-columns:
+        170px
+        170px
+        450px
+        100px
+        140px
+        160px;
+
+    align-items: center;
+
+    min-height: 27px;
+}
+
+
+/* ============================================================
+   COLONNE
+   ============================================================ */
+
+.considerazioni-prefix {
+    color: #082c69;
+}
+
+.considerazioni-tipologia {
+    color: #082c69;
+    font-weight: 500;
+}
+
+.considerazioni-descrizione {
+    color: #111;
+    border-bottom: 1px solid #ddd;
+    padding-left: 6px;
+}
+
+.considerazioni-percentuale {
+    color: #082c69;
+    font-weight: 700;
+    text-align: right;
+    padding-right: 20px;
+}
+
+.considerazioni-considerata {
+    color: #082c69;
+    text-align: center;
+}
+
+.considerazioni-valutazione {
+    font-weight: 500;
+    padding-left: 10px;
+}
+
+
+/* ============================================================
+   VALUTAZIONI
+   ============================================================ */
+
+.considerazioni-bad {
+    color: #082c69;
+}
+
+.considerazioni-medium {
+    color: #082c69;
+}
+
+.considerazioni-good {
+    color: #082c69;
+}
+
+
+/* ============================================================
+   RELAZIONE - NORMALIZZAZIONE GRAFICA
+   ------------------------------------------------------------
+   SOLO OVERRIDE VISIVI.
+   Nessuna modifica alle regole CSS esistenti.
+   Nessuna modifica alla logica JSP.
+   ============================================================ */
+
+
+/* ============================================================
+   IMPOSTAZIONE GENERALE DEL REPORT
+   ============================================================ */
+
+.def-agev-page {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.def-agev-page p {
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+
+/* ============================================================
+   SPAZIATURA UNIFORME TRA LE SEZIONI
+   ============================================================ */
+
+.def-agev-page .section-title,
+.def-agev-page .section-title-soft,
+.def-agev-page .riscossione-title {
+    margin-top: 34px;
+    margin-bottom: 18px;
+}
+
+.def-agev-page .section-subtitle {
+    margin-top: 24px;
+    margin-bottom: 8px;
+}
+
+
+/* ============================================================
+   WRAPPER TABELLE
+   ============================================================ */
+
+.def-agev-page .table-responsive {
+    margin-bottom: 22px;
+}
+
+
+/* ============================================================
+   NORMALIZZAZIONE DI TUTTE LE TABELLE DEL REPORT
+
+   Le prime .data-table restano il riferimento grafico.
+   ============================================================ */
+
+.def-agev-page .ipotesi-table,
+.def-agev-page .tagli-report-table,
+.def-agev-page .fcde-report-table,
+.def-agev-page .fcde-liberata-table,
+.def-agev-page .riflessi-table,
+.def-agev-page .riflessi-bilancio-table,
+.def-agev-page .valutazione-generale-table {
+    border-collapse: collapse;
+    border-spacing: 0;
+
+    font-size: 13px;
+    line-height: 1.25;
+
+    color: #082c69;
+
+    background: #fff;
+
+    margin-top: 8px;
+    margin-bottom: 22px;
+}
+
+
+/* ============================================================
+   BORDI
+   ============================================================ */
+
+.def-agev-page .ipotesi-table th,
+.def-agev-page .ipotesi-table td,
+
+.def-agev-page .tagli-report-table th,
+.def-agev-page .tagli-report-table td,
+
+.def-agev-page .fcde-report-table th,
+.def-agev-page .fcde-report-table td,
+
+.def-agev-page .fcde-liberata-table th,
+.def-agev-page .fcde-liberata-table td,
+
+.def-agev-page .riflessi-table th,
+.def-agev-page .riflessi-table td,
+
+.def-agev-page .riflessi-bilancio-table th,
+.def-agev-page .riflessi-bilancio-table td,
+
+.def-agev-page .valutazione-generale-table th,
+.def-agev-page .valutazione-generale-table td {
+    border: 1px solid #b8bec7;
+
+    padding: 6px 8px;
+
+    vertical-align: middle;
+}
+
+
+/* ============================================================
+   HEADER GENERICI
+
+   Stesso linguaggio delle prime data-table.
+   ============================================================ */
+
+.def-agev-page .ipotesi-table thead th,
+.def-agev-page .tagli-report-table thead th,
+.def-agev-page .fcde-report-table thead th,
+.def-agev-page .fcde-liberata-table thead th,
+.def-agev-page .riflessi-table thead th,
+.def-agev-page .riflessi-bilancio-table thead th,
+.def-agev-page .valutazione-generale-table thead th {
+    background: #e9ecef;
+
+    color: #082c69;
+
+    font-weight: 700;
+
+    text-align: center;
+
+    vertical-align: middle;
+}
+
+
+/* ============================================================
+   HEADER PRINCIPALI
+   ============================================================ */
+
+.def-agev-page .ipotesi-main-title,
+.def-agev-page .fcde-report-main-title,
+.def-agev-page .valutazione-generale-main-header {
+    background: #d8e5f2 !important;
+
+    color: #082c69 !important;
+
+    font-weight: 700;
+
+    text-align: center;
+
+    letter-spacing: .1px;
+}
+
+
+/* ============================================================
+   TAGLI - SANZIONI
+   Manteniamo la distinzione cromatica già presente,
+   ma più delicata e coerente.
+   ============================================================ */
+
+.def-agev-page .tagli-sanzioni-header {
+    background: #f7e2d4 !important;
+
+    color: #082c69 !important;
+
+    font-weight: 700;
+}
+
+.def-agev-page td.tagli-sanzioni {
+    background: #fff4e9;
+}
+
+
+/* ============================================================
+   TAGLI - INTERESSI
+   ============================================================ */
+
+.def-agev-page .tagli-interessi-header {
+    background: #dce8f4 !important;
+
+    color: #082c69 !important;
+
+    font-weight: 700;
+}
+
+.def-agev-page td.tagli-interessi {
+    background: #edf4fb;
+}
+
+
+/* ============================================================
+   TAGLI - CELLE SPECIALI
+   ============================================================ */
+
+.def-agev-page .tagli-tipologia-header {
+    background: #e9ecef !important;
+
+    color: #082c69 !important;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+.def-agev-page .tagli-description,
+.def-agev-page .tagli-tipologia {
+    background: #f8f9fa;
+
+    color: #082c69;
+
+    font-weight: 600;
+}
+
+.def-agev-page .tagli-number {
+    text-align: right;
+
+    font-variant-numeric: tabular-nums;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   TOTALI TAGLI
+   ============================================================ */
+
+.def-agev-page .tagli-total-row td {
+    font-weight: 700;
+
+    border-top: 2px solid #7d8793;
+}
+
+.def-agev-page .tagli-total-label {
+    background: #e9ecef;
+
+    color: #082c69;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   TABELLA IPOTESI
+   ============================================================ */
+
+.def-agev-page .ipotesi-table {
+    width: 100%;
+}
+
+.def-agev-page .ipotesi-table th {
+    text-align: center;
+}
+
+.def-agev-page .ipotesi-values td {
+    background: #fff3cd;
+
+    color: #082c69;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+
+/* ============================================================
+   FCDE - CALCOLO ACCANTONAMENTO
+   ============================================================ */
+
+.def-agev-page .fcde-report-table {
+    width: auto;
+
+    min-width: 650px;
+}
+
+.def-agev-page .fcde-tipologia {
+    background: #f8f9fa;
+
+    color: #082c69;
+
+    font-weight: 600;
+}
+
+.def-agev-page .fcde-number {
+    text-align: right;
+
+    white-space: nowrap;
+
+    font-variant-numeric: tabular-nums;
+}
+
+.def-agev-page .fcde-residui {
+    background: #fff3cd;
+}
+
+.def-agev-page .fcde-percentuale {
+    background: #e9ecef;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   FCDE - TOTALI
+   ============================================================ */
+
+.def-agev-page .fcde-total-row td {
+    font-weight: 700;
+
+    border-top: 2px solid #7d8793;
+
+    background: #f8f9fa;
+}
+
+
+/* ============================================================
+   QUOTA FCDE LIBERATA
+   ============================================================ */
+
+.def-agev-page .fcde-liberata-table {
+    width: 100%;
+
+    max-width: 1200px;
+}
+
+.def-agev-page .fcde-lib-group-residuo {
+    background: #e9ecef !important;
+
+    color: #082c69 !important;
+}
+
+.def-agev-page .fcde-lib-group-liberata {
+    background: #d8e5f2 !important;
+
+    color: #082c69 !important;
+}
+
+.def-agev-page .fcde-liberata-table tbody td {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* prima colonna */
+
+.def-agev-page .fcde-liberata-table tbody td:first-child {
+    background: #dce8f4;
+
+    color: #082c69;
+
+    font-weight: 700;
+}
+
+
+/* valori numerici */
+
+.def-agev-page .fcde-liberata-table tbody td:not(:first-child) {
+    text-align: right;
+}
+
+
+/* totale */
+
+.def-agev-page .fcde-liberata-table tbody tr:last-child td {
+    font-weight: 700;
+
+    border-top: 2px solid #7d8793;
+}
+
+
+/* ============================================================
+   RIFLESSI SUL BILANCIO
+   ============================================================ */
+
+.def-agev-page .riflessi-table,
+.def-agev-page .riflessi-bilancio-table {
+    width: auto;
+
+    min-width: 720px;
+}
+
+.def-agev-page .riflessi-table td,
+.def-agev-page .riflessi-bilancio-table td {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================================
+   VALUTAZIONE GENERALE
+   ============================================================ */
+
+.def-agev-page .valutazione-generale-table {
+    width: 100%;
+
+    max-width: 900px !important;
+}
+
+.def-agev-page .valutazione-generale-row-header,
+.def-agev-page .valutazione-generale-table tbody th {
+    background: #f8f9fa;
+
+    color: #082c69;
+
+    font-weight: 700;
+
+    text-align: left;
+}
+
+.def-agev-page .valutazione-generale-percentuale {
+    background: #e9ecef !important;
+
+    color: #082c69 !important;
+
+    text-align: center;
+
+    font-weight: 700;
+}
+
+.def-agev-page .valutazione-generale-table tbody td {
+    text-align: right;
+
+    white-space: nowrap;
+
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================================
+   RISULTATO VALUTAZIONE GENERALE
+
+   NON cambiamo la logica positive/negative.
+   ============================================================ */
+
+.def-agev-page .valutazione-generale-result-row th,
+.def-agev-page .valutazione-generale-result-row td {
+    border-top: 2px solid #7d8793;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   VALUTAZIONE CAPACITA' RISCOSSIONE
+   ============================================================ */
+
+.def-agev-page .riscossione-analysis {
+    margin-top: 28px;
+    margin-bottom: 34px;
+}
+
+.def-agev-page .riscossione-title {
+    color: #082c69;
+
+    font-weight: 700;
+
+    padding-bottom: 7px;
+
+    border-bottom: 2px solid #d8e5f2;
+}
+
+.def-agev-page .riscossione-row {
+    padding: 7px 10px;
+
+    border-bottom: 1px solid #dee2e6;
+}
+
+.def-agev-page .riscossione-row:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.def-agev-page .riscossione-entry {
+    color: #082c69;
+}
+
+.def-agev-page .riscossione-percent {
+    color: #082c69;
+
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================================
+   CONSIDERAZIONI FINALI
+   ============================================================ */
+
+.def-agev-page .considerazioni-finali {
+    margin-top: 38px;
+
+    color: #082c69;
+}
+
+.def-agev-page .considerazioni-title {
+    font-size: 15px;
+
+    font-weight: 700;
+
+    padding-bottom: 7px;
+
+    margin-bottom: 20px;
+
+    border-bottom: 2px solid #d8e5f2;
+}
+
+.def-agev-page .considerazioni-punti {
+    margin: 18px 0 25px 0;
+
+    padding: 12px 16px;
+
+    background: #f8f9fa;
+
+    border-left: 4px solid #d8e5f2;
+}
+
+.def-agev-page .considerazioni-punti > div {
+    margin: 3px 0;
+}
+
+
+/* ============================================================
+   CONSIDERAZIONI - RIGHE DINAMICHE
+   ============================================================ */
+
+.def-agev-page .considerazioni-riscossione {
+    max-width: 1200px;
+
+    margin-top: 18px;
+
+    border-top: 1px solid #b8bec7;
+}
+
+.def-agev-page .considerazioni-riga {
+    min-height: 34px;
+
+    padding: 5px 8px;
+
+    border-bottom: 1px solid #dee2e6;
+}
+
+.def-agev-page .considerazioni-riga:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.def-agev-page .considerazioni-tipologia {
+    font-weight: 700;
+}
+
+.def-agev-page .considerazioni-percentuale {
+    font-weight: 700;
+
+    font-variant-numeric: tabular-nums;
+}
+
+.def-agev-page .considerazioni-descrizione {
+    border-bottom: 0;
+}
+
+
+/* ============================================================
+   NUMERI - REGOLA COMUNE
+   ============================================================ */
+
+.def-agev-page .num,
+.def-agev-page .tagli-number,
+.def-agev-page .fcde-number,
+.def-agev-page .considerazioni-percentuale {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .def-agev-page .considerazioni-riga {
+        grid-template-columns:
+            110px
+            140px
+            minmax(280px, 1fr)
+            90px
+            125px
+            145px;
+    }
+}
+
+
+@media (max-width: 850px) {
+
+    .def-agev-page .considerazioni-riscossione {
+        overflow-x: auto;
+    }
+
+    .def-agev-page .considerazioni-riga {
+        min-width: 850px;
+    }
+}
+

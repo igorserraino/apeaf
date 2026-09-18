@@ -261,7 +261,7 @@
     
     
         <div class="nav-item dropdown show sidebar-group">
-        <a href="home.jsp?bip" class="dropdown-item">
+        <a href="home.jsp?relazione" class="dropdown-item">
   			  <i class="bi bi-file-earmark-text"></i>
             <span>relazione</span>
         </a>
