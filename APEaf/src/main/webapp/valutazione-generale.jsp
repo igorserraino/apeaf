@@ -187,7 +187,7 @@ if (!viewData.hasSelectedYear()) {
 
             <span>
 
-                DATI COMPUTATI DA RESIDUI ATTIVI,
+                DATI COMPUTATI DA RESIDUI ATTIVI, VALUTAZIONE RUOLI,
                 RIFLESSI SUL BILANCIO
                 E QUOTA FCDE LIBERATA
 
@@ -348,6 +348,36 @@ if (!viewData.hasSelectedYear()) {
 
 
                 </tr>
+                
+                <!-- =============================================
+				     TOTALE RUOLI
+				     ============================================= -->
+				
+				<tr>
+				
+				    <th scope="row">
+				
+				        maggiore/minore consistenza residui
+				
+				    </th>
+				
+				
+				    <%
+				
+				    for (String value :
+				            viewData.getTotalRolesValues()) {
+				
+				    %>
+				
+				        <td>
+				
+				            <%= value %>
+				
+				        </td>
+				
+				    <% } %>
+				
+				</tr>
 
 
 

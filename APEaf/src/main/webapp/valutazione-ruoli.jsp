@@ -962,8 +962,8 @@ int numeroNonCoerenti =
 
 
                     BigDecimal differenza =
-                        residuoBilancio.subtract(
-                            totaleRuolo
+                        totaleRuolo.subtract(
+                        		residuoBilancio
                         );
 
 
@@ -1100,8 +1100,8 @@ int numeroNonCoerenti =
                 <%
 
                 BigDecimal differenzaTotale =
-                    totaleResiduiBilancio.subtract(
-                        totaleRuoli
+                		totaleRuoli.subtract(
+                				totaleResiduiBilancio
                     );
 
 

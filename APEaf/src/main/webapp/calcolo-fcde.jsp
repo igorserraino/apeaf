@@ -683,12 +683,20 @@ if (datiFCDE != null &&
 
             } else {
 
+                /*
+                 * Una tipologia non più definita con valore FCDE = 0
+                 * non rappresenta un dato storico significativo.
+                 *
+                 * La consideriamo non coerente solo se contiene
+                 * effettivamente un valore diverso da zero.
+                 */
+                if (valore.compareTo(BigDecimal.ZERO) != 0) {
 
-                fcdeNonCoerente.put(
-                    nome,
-                    valore
-                );
-
+                    fcdeNonCoerente.put(
+                        nome,
+                        valore
+                    );
+                }
             }
 
 
@@ -744,21 +752,24 @@ if (datiFCDE != null &&
                     if (tipologieValide.contains(
                             nomeLegacy)) {
 
-
                         fcdePerTipologia.put(
                             nomeLegacy,
                             valore
                         );
 
-
                     } else {
 
+                        /*
+                         * Gli zero provenienti dal vecchio formato posizionale
+                         * non devono essere considerati dati obsoleti.
+                         */
+                        if (valore.compareTo(BigDecimal.ZERO) != 0) {
 
-                        fcdeNonCoerente.put(
-                            nomeLegacy,
-                            valore
-                        );
-
+                            fcdeNonCoerente.put(
+                                nomeLegacy,
+                                valore
+                            );
+                        }
                     }
                 }
             }

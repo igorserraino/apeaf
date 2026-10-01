@@ -14,6 +14,9 @@ import is.five.apeaf.utils.Utils;
 public class ValutazioneGeneraleService {
 
 
+	private final TabRuoliPageService ruoliService =
+	        new TabRuoliPageService();
+	
     private final RiflessiBilancioService riflessiService =
             new RiflessiBilancioService();
 
@@ -68,6 +71,7 @@ public class ValutazioneGeneraleService {
                     new ArrayList<String>(),
                     new ArrayList<String>(),
                     new ArrayList<String>(),
+                    new ArrayList<String>(),
                     new ArrayList<String>()
             );
         }
@@ -97,6 +101,74 @@ public class ValutazioneGeneraleService {
                 copyValues(
                         riflessiTotals.getResidualValues()
                 );
+        
+        
+        /* =====================================================
+        TOTALE RUOLI
+
+        Stessa logica del TOTALE mostrato in
+        valutazione-ruoli.jsp:
+        somma dei residui dei gruppi validi.
+        ===================================================== */
+
+     TabRuoliPageService.PageData ruoliData =
+             ruoliService.load(
+                     user,
+                     selectedYearId
+             );
+
+
+     BigDecimal totaleRuoliValue =
+             BigDecimal.ZERO;
+
+
+     if (ruoliData != null &&
+         ruoliData.getGroups() != null) {
+
+         for (TabRuoliPageService.GroupData group :
+                 ruoliData.getGroups()) {
+
+             if (group == null ||
+                 group.getTotals() == null) {
+
+                 continue;
+             }
+
+
+             BigDecimal residuoRuolo =
+                     parseNumber(
+                             group
+                                 .getTotals()
+                                 .getResidual()
+                     );
+
+
+             totaleRuoliValue =
+                     totaleRuoliValue.add(
+                             residuoRuolo
+                     );
+         }
+     }
+
+
+     /*
+      * Il totale ruoli è unico.
+      * Lo replichiamo sulle ipotesi 50 / 80 / 100.
+      */
+     List<String> totaleRuoli =
+             new ArrayList<String>();
+
+
+     for (int i = 0;
+          i < riflessiData.getHypothesisLabels().size();
+          i++) {
+
+         totaleRuoli.add(
+                 moneyFormat.format(
+                         totaleRuoliValue
+                 )
+         );
+     }
 
 
         /* =====================================================
@@ -198,7 +270,6 @@ public class ValutazioneGeneraleService {
         /* =====================================================
            VIEW DATA
            ===================================================== */
-
         return new ViewData(
 
                 selectedYear,
@@ -209,6 +280,8 @@ public class ValutazioneGeneraleService {
                 ),
 
                 totaleResidui,
+
+                totaleRuoli,
 
                 totaleTagli,
 
@@ -304,6 +377,8 @@ public class ValutazioneGeneraleService {
         private final List<String> hypothesisLabels;
 
         private final List<String> totalResidualValues;
+        
+        private final List<String> totalRolesValues;
 
         private final List<String> totalCutValues;
 
@@ -318,35 +393,32 @@ public class ValutazioneGeneraleService {
                 String selectedYear,
                 List<String> hypothesisLabels,
                 List<String> totalResidualValues,
+                List<String> totalRolesValues,
                 List<String> totalCutValues,
                 List<String> netResidualValues,
                 List<String> minorFcdeValues,
                 List<String> totalValues) {
 
-
             this.selectedYear =
                     selectedYear;
-
 
             this.hypothesisLabels =
                     hypothesisLabels;
 
-
             this.totalResidualValues =
                     totalResidualValues;
 
+            this.totalRolesValues =
+                    totalRolesValues;
 
             this.totalCutValues =
                     totalCutValues;
 
-
             this.netResidualValues =
                     netResidualValues;
 
-
             this.minorFcdeValues =
                     minorFcdeValues;
-
 
             this.totalValues =
                     totalValues;
@@ -359,6 +431,8 @@ public class ValutazioneGeneraleService {
             return new ViewData(
 
                     "",
+
+                    new ArrayList<String>(),
 
                     new ArrayList<String>(),
 
@@ -430,6 +504,11 @@ public class ValutazioneGeneraleService {
         public List<String> getTotalValues() {
 
             return totalValues;
+        }
+        
+        public List<String> getTotalRolesValues() {
+
+            return totalRolesValues;
         }
     }
 }
