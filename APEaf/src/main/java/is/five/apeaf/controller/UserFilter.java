@@ -42,10 +42,7 @@ public class UserFilter implements Filter {
 			if (ubAP != null && (ubAP.getGroupId() == 1 || ubAP.getGroupId() == 2))
 				chain.doFilter(request, response); // Continue to the requested resource
 			else
-
-			if (ubAP != null && appArray[1] != null && appArray[1].equals("on")) {
-				chain.doFilter(request, response); // Continue to the requested resource
-			} else {
+ {
 				String ip = request.getRemoteAddr();
 				if (ip.equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
 				    InetAddress inetAddress = InetAddress.getLocalHost();
